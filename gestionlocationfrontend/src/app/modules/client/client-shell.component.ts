@@ -51,7 +51,7 @@ interface ShellNavItem {
       <div class="nav-profile">
         <div class="avatar-ring">
           @if (userPhoto()) {
-            <img [src]="userPhoto()" alt="Profile" />
+            <img [src]="userPhoto()" alt="Profile" (error)="onUserPhotoError()" />
           } @else {
             <div class="avatar-initials">{{ userShortLabel().slice(0,2).toUpperCase() }}</div>
           }
@@ -295,6 +295,10 @@ export class ClientShellComponent {
     void this.router.navigateByUrl('/');
   }
 
+  onUserPhotoError(): void {
+    this.userPhoto.set(null);
+  }
+
   private syncUserFromAuth(): void {
     const raw = typeof localStorage === 'undefined' ? null : localStorage.getItem('user_info');
     if (!raw) return;
@@ -306,7 +310,7 @@ export class ClientShellComponent {
       this.userShortLabel.set(this.resolveShortName(displayName));
       this.userEmail.set(this.resolveEmail(user));
       
-      const photo = user['photo_profil'];
+      const photo = user['photo_profil_url'] ?? user['photo_profil'];
       if (typeof photo === 'string' && photo) {
         this.userPhoto.set(imageUrl(photo, 'client', 0));
       } else {

@@ -30,7 +30,12 @@ import { imageUrl } from '@app/shared/formatters';
           <div class="profile-card">
             <div class="profile-header">
               <div class="profile-avatar-wrapper">
-                <img [src]="avatar(c)" alt="Photo de profil" class="avatar-img" />
+                <img
+                  [src]="avatar(c)"
+                  alt="Photo de profil"
+                  class="avatar-img"
+                  (error)="onAvatarError($event)"
+                />
                 @if (editing()) {
                   <div class="avatar-overlay">
                     <i class="bi bi-camera" aria-hidden="true"></i>
@@ -930,7 +935,12 @@ export class ClientProfilePageComponent implements OnInit {
   }
 
   avatar(client: Client): string {
-    return imageUrl(client.photo_profil, 'client', 0);
+    return imageUrl(client.photo_profil_url ?? client.photo_profil, 'client', 0);
+  }
+
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = imageUrl(null, 'client', 0);
   }
 
   onFileSelected(event: Event): void {
