@@ -194,13 +194,22 @@ SPECTACULAR_SETTINGS = {
 _cors_default = 'http://localhost:4200,http://127.0.0.1:4200'
 _cors = os.environ.get('CORS_ALLOWED_ORIGINS', _cors_default)
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors.split(',') if origin.strip()]
-for origin in ('https://carloc-smoky.vercel.app',):
+for origin in (
+    'https://carloc-smoky.vercel.app',
+    'https://carloc-git-main-rostandngabas-projects.vercel.app',
+):
     if origin not in CORS_ALLOWED_ORIGINS:
         CORS_ALLOWED_ORIGINS.append(origin)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://carloc(-.*)?-rostandngabas-projects\.vercel\.app$',
+]
 
 _csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf.split(',') if origin.strip()]
-for origin in ('https://carloc-smoky.vercel.app',):
+for origin in (
+    'https://carloc-smoky.vercel.app',
+    'https://carloc-git-main-rostandngabas-projects.vercel.app',
+):
     if origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
