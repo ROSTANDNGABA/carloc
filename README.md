@@ -127,10 +127,10 @@ CARLOC_ADMIN_PASSWORD=...
 
 ## Liens de production
 
-A remplir avant la correction:
+Backend a completer apres le deploiement Render:
 
 ```text
-Frontend Vercel: https://...
+Frontend Vercel: https://carloc-smoky.vercel.app/
 Backend Render: https://...
 Admin Django: https://.../admin/
 Documentation API: https://.../api/docs/

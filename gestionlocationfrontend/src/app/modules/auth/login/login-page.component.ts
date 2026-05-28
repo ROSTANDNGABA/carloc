@@ -26,7 +26,7 @@ import { extractApiError } from '@app/core/utils/api.util';
       
       <div class="form-group">
         <label for="username">Email ou prénom</label>
-        <input id="username" type="text" formControlName="username" class="lux-input" placeholder="ex. soulemane@gmail.com" autocomplete="username" />
+        <input id="username" type="text" formControlName="username" class="lux-input" placeholder="Votre email ou identifiant" autocomplete="username" />
       </div>
       
       <div class="form-group">
@@ -186,8 +186,8 @@ export class LoginPageComponent {
       return 'Trop de tentatives. Attendez 5 minutes ou redémarrez le serveur API en développement.';
     }
     if (http.status === 401) {
-      return 'Identifiants incorrects. Utilisez votre email (ex. soulemane@gmail.com) ou votre prénom, avec le bon mot de passe.';
+      return 'Connexion refusée. Veuillez vérifier vos informations de connexion et réessayer.';
     }
-    return extractApiError(err) || 'Connexion impossible. Vérifiez vos identifiants puis réessayez.';
+    return extractApiError(err) || 'Connexion impossible. Veuillez vérifier vos informations de connexion et réessayer.';
   }
 }

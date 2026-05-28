@@ -338,7 +338,7 @@ JAZZMIN_SETTINGS = {
     'topmenu_links': [
         {'name': 'Accueil', 'url': 'admin:index', 'permissions': ['auth.view_user']},
         {'name': 'API Swagger', 'url': '/api/docs/', 'new_window': True},
-        {'name': 'Site Angular', 'url': 'http://localhost:4200/admin', 'new_window': True},
+        {'name': 'Site Angular', 'url': 'https://carloc-smoky.vercel.app/admin', 'new_window': True},
     ],
     'usermenu_links': [
         {'model': 'auth.user'},
