@@ -194,9 +194,15 @@ SPECTACULAR_SETTINGS = {
 _cors_default = 'http://localhost:4200,http://127.0.0.1:4200'
 _cors = os.environ.get('CORS_ALLOWED_ORIGINS', _cors_default)
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors.split(',') if origin.strip()]
+for origin in ('https://carloc-smoky.vercel.app',):
+    if origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(origin)
 
 _csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf.split(',') if origin.strip()]
+for origin in ('https://carloc-smoky.vercel.app',):
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 # Durcissement HTTP. Activez SECURE_SSL_REDIRECT/HSTS uniquement derriere HTTPS.
 SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', False)
