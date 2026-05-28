@@ -840,6 +840,7 @@ export class ClientProfilePageComponent implements OnInit {
   readonly client = signal<Client | null>(null);
   readonly editing = signal(false);
   readonly selectedPhoto = signal<File | null>(null);
+  readonly avatarVersion = signal<number | null>(null);
 
   readonly profileForm = this.fb.group({
     nom: ['', Validators.required],
@@ -911,6 +912,10 @@ export class ClientProfilePageComponent implements OnInit {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: updated => {
+          const version = photo ? Date.now() : null;
+          if (version) {
+            this.avatarVersion.set(version);
+          }
           this.client.set(updated);
           this.patchForm(updated);
           this.profileForm.patchValue({ mot_de_passe: '', confirmation_mot_de_passe: '' });
@@ -922,9 +927,15 @@ export class ClientProfilePageComponent implements OnInit {
           if (userInfoStr) {
             try {
               const userInfo = JSON.parse(userInfoStr);
-              userInfo.photo_profil = updated.photo_profil_url ?? updated.photo_profil;
+              const photoSource = updated.photo_profil_url ?? updated.photo_profil;
+              if (photoSource) {
+                const freshPhoto = this.withCacheBust(imageUrl(photoSource, 'client', 0), version ?? Date.now());
+                userInfo.photo_profil = freshPhoto;
+                userInfo.photo_profil_url = freshPhoto;
+              }
               userInfo.nom = updated.nom;
               userInfo.prenom = updated.prenom;
+              userInfo.email = updated.email;
               localStorage.setItem('user_info', JSON.stringify(userInfo));
               window.dispatchEvent(new Event('user-info-updated'));
             } catch (e) {}
@@ -935,7 +946,10 @@ export class ClientProfilePageComponent implements OnInit {
   }
 
   avatar(client: Client): string {
-    return imageUrl(client.photo_profil_url ?? client.photo_profil, 'client', 0);
+    const source = client.photo_profil_url ?? client.photo_profil;
+    const url = imageUrl(source, 'client', 0);
+    const version = this.avatarVersion();
+    return source && version ? this.withCacheBust(url, version) : url;
   }
 
   onAvatarError(event: Event): void {
@@ -975,6 +989,11 @@ export class ClientProfilePageComponent implements OnInit {
         },
         error: (err: unknown) => this.error.set(extractApiError(err)),
       });
+  }
+
+  private withCacheBust(url: string, version: number): string {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${version}`;
   }
 
   private patchForm(client: Client): void {
