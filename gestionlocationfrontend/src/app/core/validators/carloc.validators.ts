@@ -3,11 +3,11 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 /** Aligné sur api/validators.py (permis français). */
 export const PERMIS_PATTERN = /^[A-Z]{2}\d{7}$/;
 
-/** Téléphone FR : 0XXXXXXXXX ou +33XXXXXXXXX */
-export const TELEPHONE_PATTERN = /^(?:\+33|0)[1-9]\d{8}$/;
+/** Téléphone international souple : chiffres et signes usuels, sans restriction pays. */
+export const TELEPHONE_PATTERN = /^[+()\d\s.-]{3,30}$/;
 
 export function normalizePhone(value: string): string {
-  return value.replace(/\s/g, '').replace(/\./g, '').replace(/-/g, '');
+  return value.trim();
 }
 
 export function permisValidator(): ValidatorFn {

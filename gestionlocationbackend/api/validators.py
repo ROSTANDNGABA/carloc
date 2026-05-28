@@ -91,16 +91,13 @@ def validate_cni_format(num_cni):
 
 
 def validate_telephone_format(telephone):
-    """Valide numéro de téléphone français"""
+    """Valide un numéro de téléphone sans restriction de pays."""
 
     if not telephone:
         return
 
-    # Accepter format avec ou sans espaces
-    phone = telephone.replace(' ', '').replace('.', '').replace('-', '')
-
-    # Doit commencer par +33 ou 0 et contenir 10 chiffres
-    if not re.match(r'^(?:\+33|0)[1-9]\d{8}$', phone):
+    phone = telephone.strip()
+    if not re.match(r'^[+()\d\s.-]{3,30}$', phone):
         raise ValidationError(
             "Numéro de téléphone invalide",
             code='invalid_phone_format'
