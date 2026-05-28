@@ -40,6 +40,9 @@ if not SECRET_KEY:
 
 _allowed = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = [host.strip() for host in _allowed.split(',') if host.strip()]
+for host in ('carloc.onrender.com', os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')):
+    if host and host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
 
 def env_bool(name: str, default: bool = False) -> bool:
