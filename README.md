@@ -104,7 +104,7 @@ Mot de passe: A_REMPLIR
 ```text
 SECRET_KEY=...
 DEBUG=False
-ALLOWED_HOSTS=votre-api.onrender.com
+ALLOWED_HOSTS=carloc.onrender.com
 CORS_ALLOWED_ORIGINS=https://votre-frontend.vercel.app
 CSRF_TRUSTED_ORIGINS=https://votre-frontend.vercel.app
 DB_NAME=...
@@ -121,19 +121,17 @@ CARLOC_ADMIN_PASSWORD=...
 
 1. Importer le dossier `gestionlocationfrontend` dans Vercel.
 2. Verifier `gestionlocationfrontend/src/environments/environment.prod.ts`.
-3. Remplacer `https://carloc-api.onrender.com` par l'URL reelle du backend Render.
+3. Verifier que l'URL API pointe vers `https://carloc.onrender.com`.
 4. Build command: `npm run build:prod`
 5. Output directory: `dist/gestionlocationfrontend/browser`
 
 ## Liens de production
 
-Backend a completer apres le deploiement Render:
-
 ```text
 Frontend Vercel: https://carloc-smoky.vercel.app/
-Backend Render: https://...
-Admin Django: https://.../admin/
-Documentation API: https://.../api/docs/
+Backend Render: https://carloc.onrender.com/
+Admin Django: https://carloc.onrender.com/admin/
+Documentation API: https://carloc.onrender.com/api/docs/
 ```
 
 ## Securite
