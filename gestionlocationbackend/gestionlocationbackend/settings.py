@@ -53,6 +53,8 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 INSTALLED_APPS = [
     'jazzmin',
+    'cloudinary_storage',
+    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -115,7 +115,19 @@ DB_PORT=5432
 CARLOC_ADMIN_EMAIL=...
 CARLOC_ADMIN_USERNAME=...
 CARLOC_ADMIN_PASSWORD=...
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 ```
+
+### Stockage des images avec Cloudinary
+
+Render ne conserve pas durablement les fichiers envoyes dans `media/` apres un redeploiement. Pour garder les photos de profil et les images des vehicules:
+
+1. Creer un compte Cloudinary.
+2. Copier la variable `CLOUDINARY_URL` depuis le Dashboard Cloudinary.
+3. Ajouter `CLOUDINARY_URL` dans les variables d'environnement Render du backend.
+4. Redeployer le backend.
+
+Les nouveaux uploads de `photo_profil` et `image` vehicule seront alors stockes sur Cloudinary.
 
 ## Deploiement Vercel
 

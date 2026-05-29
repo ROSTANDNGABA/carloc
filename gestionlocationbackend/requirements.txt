@@ -24,6 +24,8 @@ sentry-sdk==2.25.1
 prometheus-client==0.21.1
 cryptography==44.0.2
 django-storages==1.14.6
+django-cloudinary-storage==0.3.0
+cloudinary==1.44.1
 boto3==1.37.14
 gunicorn==23.0.0
 whitenoise==6.9.0

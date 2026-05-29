@@ -34,3 +34,5 @@ services:
         sync: false
       - key: CARLOC_ADMIN_PASSWORD
         sync: false
+      - key: CLOUDINARY_URL
+        sync: false

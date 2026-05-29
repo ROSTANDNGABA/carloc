@@ -62,5 +62,14 @@ def get_client_document_storage():
     return EncryptedMediaStorage()
 
 
+def get_public_image_storage():
+    """Cloudinary si configure, sinon stockage media Django classique."""
+    if os.environ.get('CLOUDINARY_URL', '').strip():
+        from cloudinary_storage.storage import MediaCloudinaryStorage
+
+        return MediaCloudinaryStorage()
+    return default_storage
+
+
 def get_default_file_storage():
     return default_storage

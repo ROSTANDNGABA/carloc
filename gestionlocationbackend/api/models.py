@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from .soft_delete import SoftDeleteMixin
-from .storages import get_client_document_storage
+from .storages import get_client_document_storage, get_public_image_storage
 from .utils import calculer_montant_location, nb_jours_location
 from .validators import (
     validate_document_file,
@@ -30,7 +30,12 @@ class Vehicule(SoftDeleteMixin, models.Model):
     categorie = models.CharField(max_length=50)
     prix_journalier = models.DecimalField(max_digits=10, decimal_places=2)
     statut = models.CharField(max_length=20, choices=STATUTS, default='disponible')
-    image = models.ImageField(upload_to='vehicules/', null=True, blank=True)
+    image = models.ImageField(
+        upload_to='vehicules/',
+        null=True,
+        blank=True,
+        storage=get_public_image_storage,
+    )
 
     class Meta:
         ordering = ['marque', 'modele']
@@ -72,7 +77,12 @@ class Client(SoftDeleteMixin, models.Model):
         blank=True,
         validators=[validate_cni_format]
     )
-    photo_profil = models.ImageField(upload_to='clients/photos/', null=True, blank=True)
+    photo_profil = models.ImageField(
+        upload_to='clients/photos/',
+        null=True,
+        blank=True,
+        storage=get_public_image_storage,
+    )
     solde = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     permis_conduire = models.FileField(
         upload_to='documents_clients/permis/',
