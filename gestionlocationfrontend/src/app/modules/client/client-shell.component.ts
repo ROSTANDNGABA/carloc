@@ -78,12 +78,24 @@ styles: [`
   .client-layout {
     display: flex; flex-direction: column; min-height: 100vh;
     background: var(--lux-bg);
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .client-layout *,
+  .client-layout *::before,
+  .client-layout *::after {
+    box-sizing: border-box;
   }
 
   /* ── NAVBAR ── */
   .lux-navbar {
     position: sticky; top: 0; z-index: 200;
     height: 68px;
+    width: 100%;
+    max-width: 100vw;
     background: var(--lux-surface);
     border-bottom: 1px solid var(--lux-border);
     display: flex; align-items: center;
@@ -237,7 +249,26 @@ styles: [`
     .nav-sep { display: none; }
     .nav-new-resa { text-align: center; padding: 0.7rem 1rem; }
     .nav-profile { padding: 0.5rem 0; }
-    .client-page-content { padding: 1.5rem; }
+    .client-page-content {
+      width: 100%;
+      max-width: 100vw;
+      padding: 1rem;
+      overflow-x: hidden;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .lux-navbar {
+      padding: 0.85rem;
+    }
+
+    .nav-logo {
+      font-size: 1.4rem;
+    }
+
+    .client-page-content {
+      padding: 0.5rem;
+    }
   }
 `]
 })

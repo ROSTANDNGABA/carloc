@@ -125,6 +125,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     min-height: calc(100vh - 80px);
     padding: 2rem;
     background: radial-gradient(circle at center, var(--lux-surface-alt) 0%, var(--lux-bg) 100%);
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  .lux-auth-page *,
+  .lux-auth-page *::before,
+  .lux-auth-page *::after {
+    box-sizing: border-box;
   }
   .lux-auth-card {
     background-color: var(--lux-surface);
@@ -133,6 +141,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     padding: 3rem;
     width: 100%;
     max-width: 550px;
+    min-width: 0;
     box-shadow: var(--lux-shadow);
   }
   .auth-header {
@@ -142,9 +151,11 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   .auth-header h2 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
+    overflow-wrap: anywhere;
   }
   .auth-header p {
     color: var(--lux-text-muted);
+    overflow-wrap: anywhere;
   }
   .lux-form {
     display: flex;
@@ -153,13 +164,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   }
   .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
   .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
   }
   .form-group label {
     font-weight: 600;
@@ -173,6 +185,8 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     border-radius: 8px;
     font-family: var(--lux-font);
     transition: var(--lux-transition);
+    width: 100%;
+    min-width: 0;
   }
   .lux-input:focus {
     outline: none;
@@ -214,6 +228,56 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     color: var(--lux-text-muted);
     font-weight: 400;
     font-size: 0.85rem;
+  }
+  @media (max-width: 680px) {
+    .lux-auth-page {
+      align-items: flex-start;
+      min-height: auto;
+      padding: 1rem 0.75rem;
+    }
+
+    .lux-auth-card {
+      max-width: 100%;
+      padding: 1.25rem;
+      border-radius: 12px;
+    }
+
+    .auth-header {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .auth-header h2 {
+      font-size: 1.55rem;
+      line-height: 1.15;
+    }
+
+    .auth-header p {
+      font-size: 0.95rem;
+    }
+
+    .lux-form {
+      gap: 1rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .lux-input {
+      padding: 0.78rem 0.9rem;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .lux-auth-page {
+      padding-inline: 0.5rem;
+    }
+
+    .lux-auth-card {
+      padding: 1rem;
+    }
   }
   `]
 })

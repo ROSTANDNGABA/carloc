@@ -95,6 +95,15 @@ import { money, shortDate } from '@app/shared/formatters';
   styles: [`
   .lux-page {
     animation: fadeIn 0.4s ease;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  .lux-page *,
+  .lux-page *::before,
+  .lux-page *::after {
+    box-sizing: border-box;
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -106,16 +115,18 @@ import { money, shortDate } from '@app/shared/formatters';
   .page-header h2 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
+    overflow-wrap: anywhere;
   }
   .page-header p {
     color: var(--lux-text-muted);
+    overflow-wrap: anywhere;
   }
   .mb-4 {
     margin-bottom: 2rem;
   }
   .lux-metric-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
   }
   .lux-metric-card {
@@ -124,6 +135,7 @@ import { money, shortDate } from '@app/shared/formatters';
     border-radius: var(--lux-radius);
     padding: 1.5rem;
     box-shadow: var(--lux-shadow);
+    min-width: 0;
   }
   .metric-info {
     display: flex;
@@ -140,15 +152,18 @@ import { money, shortDate } from '@app/shared/formatters';
     font-size: 1.8rem;
     font-weight: 800;
     color: var(--lux-accent);
+    overflow-wrap: anywhere;
   }
   .lux-panel {
     background-color: var(--lux-surface);
     border: 1px solid var(--lux-border);
     border-radius: var(--lux-radius);
     overflow: hidden;
+    max-width: 100%;
   }
   .panel-body {
     padding: 1.5rem;
+    max-width: 100%;
   }
   .lux-table {
     width: 100%;
@@ -187,6 +202,7 @@ import { money, shortDate } from '@app/shared/formatters';
     text-align: center;
     padding: 4rem;
     color: var(--lux-text-muted);
+    max-width: 100%;
   }
   .lux-empty-state i {
     font-size: 3rem;
@@ -196,6 +212,51 @@ import { money, shortDate } from '@app/shared/formatters';
   .lux-empty-state h3 {
     color: var(--lux-heading);
     margin-bottom: 0.5rem;
+  }
+  @media (max-width: 760px) {
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-header h2 {
+      font-size: 1.65rem;
+    }
+
+    .lux-metric-grid {
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .lux-metric-card {
+      padding: 1rem;
+    }
+
+    .metric-label {
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: 1.45rem;
+    }
+
+    .panel-body {
+      padding: 1rem;
+    }
+
+    .lux-empty-state {
+      padding: 3rem 1rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .page-header h2 {
+      font-size: 1.45rem;
+    }
+
+    .page-header p {
+      font-size: 0.92rem;
+    }
   }
   `]
 })

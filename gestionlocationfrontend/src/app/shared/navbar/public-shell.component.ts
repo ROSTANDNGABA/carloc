@@ -76,6 +76,9 @@ import { AuthService } from '@app/auth/auth.service';
     top: 0;
     z-index: 1000;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   .theme-light .lux-header {
     background-color: rgba(255, 255, 255, 0.95);
@@ -104,12 +107,14 @@ import { AuthService } from '@app/auth/auth.service';
   }
   .lux-container {
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 80px;
+    box-sizing: border-box;
   }
   .lux-logo {
     display: flex;
@@ -121,6 +126,7 @@ import { AuthService } from '@app/auth/auth.service';
     letter-spacing: -0.05em;
     text-decoration: none;
     transition: transform 0.3s ease;
+    min-width: 0;
   }
   .lux-logo:hover {
     transform: scale(1.02);
@@ -134,6 +140,7 @@ import { AuthService } from '@app/auth/auth.service';
   .lux-nav {
     display: flex;
     gap: 2.5rem;
+    min-width: 0;
   }
   .lux-nav a {
     font-weight: 500;
@@ -146,6 +153,7 @@ import { AuthService } from '@app/auth/auth.service';
     display: flex;
     gap: 1rem;
     align-items: center;
+    min-width: 0;
   }
   .theme-toggle-btn {
     display: flex; align-items: center; justify-content: center;
@@ -220,18 +228,57 @@ import { AuthService } from '@app/auth/auth.service';
     .lux-container {
       flex-direction: column;
       height: auto;
-      padding: 1.5rem;
-      gap: 1.5rem;
+      align-items: stretch;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    .lux-logo {
+      justify-content: center;
+      font-size: 1.55rem;
     }
     .lux-nav {
-      gap: 1.5rem;
+      width: 100%;
+      gap: 0.75rem;
       flex-wrap: wrap;
       justify-content: center;
+    }
+    .lux-nav a {
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    .lux-actions {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-with-icon {
+      max-width: 100%;
+      justify-content: center;
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
     .footer-grid {
       grid-template-columns: 1fr;
       gap: 2rem;
       text-align: center;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .lux-container {
+      padding: 0.85rem 0.5rem;
+    }
+
+    .lux-logo {
+      font-size: 1.4rem;
+    }
+
+    .lux-nav {
+      gap: 0.5rem 0.75rem;
+    }
+
+    .lux-nav a {
+      font-size: 0.88rem;
     }
   }
   `]

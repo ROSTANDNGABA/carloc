@@ -315,9 +315,18 @@ import { imageUrl } from '@app/shared/formatters';
   styles: [`
     .profile-page {
       padding: 2rem;
+      width: 100%;
       max-width: 1100px;
       margin: 0 auto;
       color: var(--lux-text);
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    .profile-page *,
+    .profile-page *::before,
+    .profile-page *::after {
+      box-sizing: border-box;
     }
 
     .page-header {
@@ -370,6 +379,7 @@ import { imageUrl } from '@app/shared/formatters';
       border: 1px solid var(--lux-border);
       box-shadow: var(--lux-shadow);
       overflow: hidden;
+      max-width: 100%;
     }
 
     .profile-header {
@@ -422,6 +432,7 @@ import { imageUrl } from '@app/shared/formatters';
 
     .profile-header-info {
       flex: 1;
+      min-width: 0;
     }
 
     .profile-header-info h3 {
@@ -429,6 +440,7 @@ import { imageUrl } from '@app/shared/formatters';
       font-size: 1.75rem;
       color: var(--lux-heading);
       font-weight: 700;
+      overflow-wrap: anywhere;
     }
 
     .profile-email,
@@ -439,6 +451,8 @@ import { imageUrl } from '@app/shared/formatters';
       align-items: center;
       gap: 0.5rem;
       font-size: 0.95rem;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .btn-edit {
@@ -469,7 +483,7 @@ import { imageUrl } from '@app/shared/formatters';
 
     .details-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1.25rem;
     }
 
@@ -478,6 +492,7 @@ import { imageUrl } from '@app/shared/formatters';
       align-items: center;
       gap: 1rem;
       padding: 1.25rem;
+      min-width: 0;
       background: rgba(30, 64, 175, 0.03);
       border-radius: 12px;
       border: 1px solid var(--lux-border);
@@ -503,12 +518,14 @@ import { imageUrl } from '@app/shared/formatters';
       justify-content: center;
       color: var(--lux-accent);
       font-size: 1.25rem;
+      flex: 0 0 48px;
     }
 
     .detail-content {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
+      min-width: 0;
     }
 
     .detail-label {
@@ -523,6 +540,8 @@ import { imageUrl } from '@app/shared/formatters';
       font-size: 1rem;
       color: var(--lux-text);
       font-weight: 600;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .profile-form {
@@ -562,7 +581,7 @@ import { imageUrl } from '@app/shared/formatters';
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1.5rem;
     }
 
@@ -570,6 +589,7 @@ import { imageUrl } from '@app/shared/formatters';
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
+      min-width: 0;
     }
 
     .form-group.full-width {
@@ -598,6 +618,8 @@ import { imageUrl } from '@app/shared/formatters';
       background: var(--lux-bg);
       color: var(--lux-text);
       transition: all 0.3s ease;
+      width: 100%;
+      min-width: 0;
     }
 
     .form-control:focus {
@@ -685,9 +707,11 @@ import { imageUrl } from '@app/shared/formatters';
 
     .file-info span {
       flex: 1;
+      min-width: 0;
       color: var(--lux-text);
       font-weight: 600;
       font-size: 0.95rem;
+      overflow-wrap: anywhere;
     }
 
     .remove-file-btn {
@@ -788,12 +812,13 @@ import { imageUrl } from '@app/shared/formatters';
 
     @media (max-width: 768px) {
       .profile-page {
-        padding: 1rem;
+        padding: 0.75rem;
       }
 
       .profile-header {
         flex-direction: column;
         text-align: center;
+        gap: 1rem;
       }
 
       .profile-header-info {
@@ -820,11 +845,61 @@ import { imageUrl } from '@app/shared/formatters';
 
       .profile-form,
       .profile-details {
-        padding: 1.5rem;
+        padding: 1rem;
       }
 
       .profile-header {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 1rem;
+      }
+
+      .detail-card {
+        align-items: flex-start;
+        padding: 1rem;
+      }
+
+      .detail-icon {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+      }
+
+      .file-upload-area {
+        padding: 2rem 1rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .profile-page {
+        padding: 0.5rem;
+      }
+
+      .page-header h2 {
+        font-size: 1.55rem;
+      }
+
+      .profile-card {
+        border-radius: 12px;
+      }
+
+      .profile-avatar-wrapper {
+        width: 92px;
+        height: 92px;
+      }
+
+      .profile-header-info h3 {
+        font-size: 1.25rem;
+      }
+
+      .detail-card {
+        gap: 0.75rem;
+      }
+
+      .detail-label {
+        font-size: 0.72rem;
+      }
+
+      .detail-value {
+        font-size: 0.95rem;
       }
     }
   `]
