@@ -28,7 +28,7 @@ interface PageContext {
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   template: `
     <div class="admin-layout" [class.dark-mode]="isDark()">
-      <aside class="sidebar">
+      <aside class="sidebar" [class.open]="isSidebarOpen()">
         <a class="brand sidebar-brand" [routerLink]="basePath">
           <span class="brand-mark">CL</span>
           <span>
@@ -65,6 +65,10 @@ interface PageContext {
         </button>
       </aside>
 
+      @if (isSidebarOpen()) {
+        <div class="sidebar-overlay" (click)="toggleSidebar()"></div>
+      }
+
       <section class="workspace">
         <header class="workspace-topbar">
           <div class="topbar-copy">
@@ -86,8 +90,11 @@ interface PageContext {
             </span>
             <a class="btn btn-quiet" routerLink="/catalogue">
               <i class="bi bi-globe2" aria-hidden="true"></i>
-              Voir le site
+              <span class="d-none d-sm-inline">Voir le site</span>
             </a>
+            <button class="btn btn-icon menu-btn" type="button" (click)="toggleSidebar()" aria-label="Menu">
+              <i class="bi bi-list" style="font-size: 1.5rem;" aria-hidden="true"></i>
+            </button>
           </div>
         </header>
 
@@ -98,6 +105,16 @@ interface PageContext {
     </div>
   `,
   styles: [`
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      z-index: 990;
+      backdrop-filter: blur(2px);
+    }
+    .menu-btn {
+      display: none;
+    }
     .admin-layout {
       --admin-bg: #f3f6fb;
       --admin-panel: #ffffff;
@@ -452,6 +469,10 @@ interface PageContext {
     }
 
     @media (max-width: 991.98px) {
+      .menu-btn {
+        display: inline-flex;
+      }
+
       .admin-layout {
         grid-template-columns: 1fr;
       }
@@ -550,7 +571,16 @@ export class AdminShellComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly isDark = signal(false);
+  readonly isSidebarOpen = signal(false);
   readonly basePath = this.auth.isGestionnaire() ? '/gestionnaire' : '/admin';
+
+  constructor() {
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => this.isSidebarOpen.set(false));
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update(v => !v);
+  }
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'bi-speedometer2', link: this.basePath },

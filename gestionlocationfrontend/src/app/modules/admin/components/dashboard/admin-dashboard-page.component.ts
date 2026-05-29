@@ -12,6 +12,10 @@ import { imageUrl, money, shortDate } from '@app/shared/formatters';
   standalone: true,
   imports: [ReactiveFormsModule],
   styles: [`
+    *, *::before, *::after {
+      box-sizing: border-box !important;
+      max-width: 100%;
+    }
     .period-form {
       display: flex;
       gap: 1rem;
@@ -27,6 +31,12 @@ import { imageUrl, money, shortDate } from '@app/shared/formatters';
       position: relative;
       width: 200px;
       height: 200px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .pie-chart svg {
+      width: 100%;
+      height: 100%;
     }
     .fleet-legend {
       display: flex;
@@ -62,6 +72,11 @@ import { imageUrl, money, shortDate } from '@app/shared/formatters';
     }
 
     @media (max-width: 900px) {
+      .admin-dashboard-page {
+        min-width: 0;
+        width: 100%;
+        overflow-x: hidden;
+      }
       .section-heading {
         flex-direction: column;
         align-items: flex-start;
@@ -71,9 +86,16 @@ import { imageUrl, money, shortDate } from '@app/shared/formatters';
         flex-direction: column;
         width: 100%;
         align-items: stretch;
+        margin: 0;
+        padding: 0;
       }
       .period-form input, .period-form button {
         width: 100%;
+        max-width: 100%;
+      }
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
       }
       .dashboard-grid {
         grid-template-columns: 1fr !important;
@@ -95,6 +117,20 @@ import { imageUrl, money, shortDate } from '@app/shared/formatters';
       }
       .chart-summary-grid {
         grid-template-columns: 1fr !important;
+      }
+      .chart-container {
+        height: 280px !important;
+        margin: 1rem 0 !important;
+      }
+      .panel-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .panel-heading > div:last-child {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
       }
     }
   `],

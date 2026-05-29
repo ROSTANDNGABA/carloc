@@ -44,28 +44,19 @@ import { imageUrl } from '@app/shared/formatters';
               </div>
               <div class="profile-header-info">
                 <h3>{{ c.prenom }} {{ c.nom }}</h3>
-                <p class="profile-email">
-                  <i class="bi bi-envelope" aria-hidden="true"></i>
-                  {{ c.email }}
-                </p>
-                <p class="profile-phone">
-                  <i class="bi bi-telephone" aria-hidden="true"></i>
-                  {{ c.telephone }}
-                </p>
+                <span class="client-badge">Compte Client</span>
               </div>
-              <button
-                class="btn-edit"
-                type="button"
-                (click)="toggleEdit()"
-              >
-                @if (editing()) {
-                  <i class="bi bi-x-lg" aria-hidden="true"></i>
-                  Annuler
-                } @else {
+              @if (!editing()) {
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  (click)="toggleEdit()"
+                  style="margin-left: auto;"
+                >
                   <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                  Modifier
-                }
-              </button>
+                  Modifier mon profil
+                </button>
+              }
             </div>
 
             @if (editing()) {
@@ -240,25 +231,11 @@ import { imageUrl } from '@app/shared/formatters';
               </form>
             } @else {
               <div class="profile-details">
+                <div class="detail-section-title">
+                  <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
+                  Informations de contact
+                </div>
                 <div class="details-grid">
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-person" aria-hidden="true"></i>
-                    </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Prénom</span>
-                      <span class="detail-value">{{ c.prenom }}</span>
-                    </div>
-                  </div>
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-person-badge" aria-hidden="true"></i>
-                    </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Nom</span>
-                      <span class="detail-value">{{ c.nom }}</span>
-                    </div>
-                  </div>
                   <div class="detail-card">
                     <div class="detail-icon">
                       <i class="bi bi-envelope" aria-hidden="true"></i>
@@ -286,6 +263,13 @@ import { imageUrl } from '@app/shared/formatters';
                       <span class="detail-value">{{ c.adresse || 'Non renseignée' }}</span>
                     </div>
                   </div>
+                </div>
+
+                <div class="detail-section-title" style="margin-top: 2rem;">
+                  <i class="bi bi-card-heading" aria-hidden="true"></i>
+                  Documents officiels
+                </div>
+                <div class="details-grid">
                   <div class="detail-card">
                     <div class="detail-icon">
                       <i class="bi bi-card-text" aria-hidden="true"></i>

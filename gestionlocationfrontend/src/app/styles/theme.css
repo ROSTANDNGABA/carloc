@@ -159,9 +159,14 @@
 }
 
 html {
+  box-sizing: border-box;
   min-height: 100%;
   scroll-behavior: smooth;
   background: var(--carloc-bg);
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 
 body {
@@ -324,6 +329,16 @@ small {
 
 .surface-alt {
   background-color: var(--carloc-surface-alt) !important;
+}
+
+.surface-panel,
+.metric,
+.alert-banner {
+  background: var(--carloc-surface);
+  border: 1.5px solid var(--carloc-border);
+  border-radius: var(--carloc-radius-lg);
+  box-shadow: var(--carloc-shadow-sm);
+  min-width: 0;
 }
 
 .surface-card {
