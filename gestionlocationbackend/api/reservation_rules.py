@@ -17,7 +17,7 @@ def _get_int_config(key: str, default: int) -> int:
 
 
 def _require_client_documents() -> bool:
-    return False
+    return ConfigurationMetier.get_bool('REQUIRE_CLIENT_DOCUMENTS', default=False)
 
 
 def valider_eligibilite_reservation(client, date_debut, date_fin, exclude_reservation_pk=None):

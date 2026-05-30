@@ -12,12 +12,14 @@ describe('authGuard', () => {
   const authServiceMock = {
     isLoggedIn: vi.fn(),
     isAdmin: vi.fn(),
+    isGestionnaire: vi.fn(),
   };
 
   beforeEach(() => {
     routerMock.navigate.mockReset();
     authServiceMock.isLoggedIn.mockReset();
     authServiceMock.isAdmin.mockReset();
+    authServiceMock.isGestionnaire.mockReset();
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,15 +54,29 @@ describe('authGuard', () => {
     expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 
-  it('redirige vers le catalogue quand un client tente d acces admin', () => {
+  it('redirige vers le client quand un client tente d acces admin', () => {
     authServiceMock.isLoggedIn.mockReturnValue(true);
     authServiceMock.isAdmin.mockReturnValue(false);
+    authServiceMock.isGestionnaire.mockReturnValue(false);
 
     const result = TestBed.runInInjectionContext(() =>
       authGuard({} as never, { url: '/admin/dashboard' } as never)
     );
 
     expect(result).toBeFalsy();
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/catalogue']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/client']);
+  });
+
+  it('redirige vers gestionnaire quand un gestionnaire tente d acces admin', () => {
+    authServiceMock.isLoggedIn.mockReturnValue(true);
+    authServiceMock.isAdmin.mockReturnValue(false);
+    authServiceMock.isGestionnaire.mockReturnValue(true);
+
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard({} as never, { url: '/admin/dashboard' } as never)
+    );
+
+    expect(result).toBeFalsy();
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/gestionnaire']);
   });
 });

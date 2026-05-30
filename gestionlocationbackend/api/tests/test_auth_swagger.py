@@ -19,12 +19,24 @@ class AuthTests(CarLocTestCase):
         self.assertEqual(response.data['client_id'], self.client_profile.id)
 
     def test_login_admin_role(self):
+        # Create a true admin (superuser) to get the 'admin' role
+        admin_user = User.objects.create_superuser('superadmin@test.com', 'superadmin@test.com', 'admin12345')
+        response = self.client.post('/api/auth/login/', {
+            'username': 'superadmin@test.com',
+            'password': 'admin12345',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['role'], 'admin')
+        self.assertIsNone(response.data.get('client_id'))
+
+    def test_login_gestionnaire_role(self):
+        # The base test admin is staff but not superuser, so role is 'gestionnaire'
         response = self.client.post('/api/auth/login/', {
             'username': 'admin@test.com',
             'password': 'admin12345',
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['role'], 'admin')
+        self.assertEqual(response.data['role'], 'gestionnaire')
         self.assertIsNone(response.data.get('client_id'))
 
     def test_login_client_par_prenom_si_unique(self):
