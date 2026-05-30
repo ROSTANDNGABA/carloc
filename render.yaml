@@ -28,6 +28,24 @@ services:
         value: https://carloc-smoky.vercel.app,https://carloc-git-main-rostandngabas-projects.vercel.app
       - key: CSRF_TRUSTED_ORIGINS
         value: https://carloc-smoky.vercel.app,https://carloc-git-main-rostandngabas-projects.vercel.app
+      - key: CELERY_TASK_ALWAYS_EAGER
+        value: true
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USE_TLS
+        value: true
+      - key: EMAIL_USE_SSL
+        value: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
       - key: CARLOC_ADMIN_EMAIL
         sync: false
       - key: CARLOC_ADMIN_USERNAME
