@@ -355,6 +355,11 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 )
 CARLOC_ADMIN_EMAIL = os.environ.get('CARLOC_ADMIN_EMAIL', EMAIL_HOST_USER or 'admin@carloc.cm')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'smtp').strip().lower()
+EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
+EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
+EMAILJS_PUBLIC_KEY = os.environ.get('EMAILJS_PUBLIC_KEY', '').strip()
+EMAILJS_PRIVATE_KEY = os.environ.get('EMAILJS_PRIVATE_KEY', '').strip()
 
 # --- Interface Django Admin (Jazzmin) — thème CarLoc ---
 JAZZMIN_SETTINGS = {

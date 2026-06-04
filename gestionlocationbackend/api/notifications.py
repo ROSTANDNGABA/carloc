@@ -1,9 +1,9 @@
 """Notifications e-mail CarLoc (réservations, paiements, annulations)."""
 import logging
 
+import requests
 from django.conf import settings
 from django.core.mail import send_mail
-from django.utils import timezone
 
 from .models import NotificationLog
 
@@ -22,18 +22,64 @@ def _enregistrer_log(type_notif, destinataire, sujet, corps, reservation=None, e
     )
 
 
+def _nom_destinataire(reservation=None) -> str:
+    if reservation and getattr(reservation, 'client', None):
+        client = reservation.client
+        return f'{client.prenom} {client.nom}'.strip() or 'Client'
+    return 'Client'
+
+
+def _envoyer_emailjs(destinataire: str, sujet: str, corps: str, reservation=None) -> None:
+    required = {
+        'EMAILJS_SERVICE_ID': settings.EMAILJS_SERVICE_ID,
+        'EMAILJS_TEMPLATE_ID': settings.EMAILJS_TEMPLATE_ID,
+        'EMAILJS_PUBLIC_KEY': settings.EMAILJS_PUBLIC_KEY,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        raise ValueError(f'Configuration EmailJS incomplete: {", ".join(missing)}')
+
+    payload = {
+        'service_id': settings.EMAILJS_SERVICE_ID,
+        'template_id': settings.EMAILJS_TEMPLATE_ID,
+        'user_id': settings.EMAILJS_PUBLIC_KEY,
+        'template_params': {
+            'to_email': destinataire,
+            'to_name': _nom_destinataire(reservation),
+            'subject': sujet,
+            'message': corps,
+        },
+    }
+    if settings.EMAILJS_PRIVATE_KEY:
+        payload['accessToken'] = settings.EMAILJS_PRIVATE_KEY
+
+    response = requests.post(
+        'https://api.emailjs.com/api/v1.0/email/send',
+        json=payload,
+        timeout=settings.EMAIL_TIMEOUT,
+    )
+    response.raise_for_status()
+
+
+def _envoyer_smtp(destinataire: str, sujet: str, corps: str) -> None:
+    send_mail(
+        subject=sujet,
+        message=corps,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[destinataire],
+        fail_silently=False,
+    )
+
+
 def envoyer_notification(type_notif, destinataire, sujet, corps, reservation=None) -> bool:
     if not destinataire:
         return False
 
     try:
-        send_mail(
-            subject=sujet,
-            message=corps,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[destinataire],
-            fail_silently=False,
-        )
+        if settings.EMAIL_PROVIDER == 'emailjs':
+            _envoyer_emailjs(destinataire, sujet, corps, reservation)
+        else:
+            _envoyer_smtp(destinataire, sujet, corps)
         _enregistrer_log(type_notif, destinataire, sujet, corps, reservation, envoye=True)
         return True
     except Exception as exc:
