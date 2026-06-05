@@ -356,7 +356,8 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 CARLOC_ADMIN_EMAIL = os.environ.get('CARLOC_ADMIN_EMAIL', EMAIL_HOST_USER or 'admin@carloc.cm')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
 
-# Email provider: "django" uses Django SMTP/console, "emailjs" uses EmailJS REST API.
+# Email provider: "django" utilise SMTP Django, "emailjs" utilise l'API REST EmailJS.
+# Sur Render, définir EMAIL_PROVIDER=django pour utiliser Gmail SMTP (recommandé).
 EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'django').strip().lower()
 EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
 EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
@@ -372,11 +373,6 @@ PUBLIC_BACKEND_URL = os.environ.get(
     'PUBLIC_BACKEND_URL',
     f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'carloc.onrender.com')}",
 ).rstrip('/')
-EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'smtp').strip().lower()
-EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
-EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
-EMAILJS_PUBLIC_KEY = os.environ.get('EMAILJS_PUBLIC_KEY', '').strip()
-EMAILJS_PRIVATE_KEY = os.environ.get('EMAILJS_PRIVATE_KEY', '').strip()
 
 # --- Interface Django Admin (Jazzmin) — thème CarLoc ---
 JAZZMIN_SETTINGS = {
