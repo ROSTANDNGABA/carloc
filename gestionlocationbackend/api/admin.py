@@ -393,8 +393,8 @@ class NotificationLogAdmin(admin.ModelAdmin):
     @admin.display(description='Envoyé', ordering='envoye')
     def badge_envoye(self, obj):
         if obj.envoye:
-            return format_html('<span style="color:#0f766e;font-weight:700;">✓ OK</span>')
-        return format_html('<span style="color:#b42318;font-weight:700;">✗ Échec</span>')
+            return format_html('<span style="color:#0f766e;font-weight:700;">\u2713 OK</span>')
+        return format_html('<span style="color:#b42318;font-weight:700;">\u2717 \u00c9chec</span>')
 
     @admin.display(description='Erreur')
     def erreur_courte(self, obj):
