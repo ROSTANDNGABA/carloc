@@ -359,10 +359,11 @@ class NotificationLogAdmin(admin.ModelAdmin):
         'destinataire',
         'sujet_court',
         'badge_envoye',
+        'erreur_courte',
         'date_envoi',
     )
     list_filter = ('type_notification', 'envoye', 'date_envoi')
-    search_fields = ('destinataire', 'sujet', 'corps')
+    search_fields = ('destinataire', 'sujet', 'corps', 'erreur')
     date_hierarchy = 'date_envoi'
     readonly_fields = (
         'type_notification',
@@ -375,6 +376,7 @@ class NotificationLogAdmin(admin.ModelAdmin):
         'date_envoi',
     )
     list_per_page = 40
+    actions = ['renvoyer_emails_echoues']
 
     def has_add_permission(self, request):
         return False
@@ -388,11 +390,44 @@ class NotificationLogAdmin(admin.ModelAdmin):
             return f'{obj.sujet[:45]}…'
         return obj.sujet
 
-    @admin.display(description='Envoyé', boolean=True, ordering='envoye')
+    @admin.display(description='Envoyé', ordering='envoye')
     def badge_envoye(self, obj):
         if obj.envoye:
-            return format_html('<span style="color:#0f766e;font-weight:700;">OK</span>')
-        return format_html('<span style="color:#b42318;font-weight:700;">Échec</span>')
+            return format_html('<span style="color:#0f766e;font-weight:700;">✓ OK</span>')
+        return format_html('<span style="color:#b42318;font-weight:700;">✗ Échec</span>')
+
+    @admin.display(description='Erreur')
+    def erreur_courte(self, obj):
+        if not obj.erreur:
+            return '—'
+        texte = obj.erreur[:80] + '…' if len(obj.erreur) > 80 else obj.erreur
+        return format_html(
+            '<span style="color:#b42318;font-size:0.8em;" title="{}">{}</span>',
+            obj.erreur,
+            texte,
+        )
+
+    @admin.action(description='Renvoyer les emails sélectionnés (échoués)')
+    def renvoyer_emails_echoues(self, request, queryset):
+        from .notifications import envoyer_notification
+        succes, echecs = 0, 0
+        for log in queryset.filter(envoye=False):
+            ok = envoyer_notification(
+                log.type_notification,
+                log.destinataire,
+                log.sujet,
+                log.corps,
+                log.reservation,
+            )
+            if ok:
+                succes += 1
+            else:
+                echecs += 1
+        self.message_user(
+            request,
+            f'{succes} email(s) renvoyé(s) avec succès. {echecs} échec(s).',
+            level='success' if not echecs else 'warning',
+        )
 
 
 @admin.register(AuditLog)

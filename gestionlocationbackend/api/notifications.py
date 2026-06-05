@@ -1,5 +1,6 @@
 """Notifications e-mail CarLoc (reservations, paiements, annulations)."""
 import logging
+import traceback
 
 import requests
 from django.conf import settings
@@ -11,33 +12,36 @@ logger = logging.getLogger(__name__)
 
 
 def _enregistrer_log(type_notif, destinataire, sujet, corps, reservation=None, envoye=True, erreur=''):
-    NotificationLog.objects.create(
-        type_notification=type_notif,
-        destinataire=destinataire,
-        sujet=sujet,
-        corps=corps,
-        reservation=reservation,
-        envoye=envoye,
-        erreur=erreur,
-    )
+    try:
+        NotificationLog.objects.create(
+            type_notification=type_notif,
+            destinataire=destinataire,
+            sujet=sujet,
+            corps=corps,
+            reservation=reservation,
+            envoye=envoye,
+            erreur=erreur,
+        )
+    except Exception as e:
+        logger.error('Impossible d\'enregistrer le NotificationLog : %s', e)
 
 
 def _emailjs_template_id(type_notif):
     templates = {
-        'reservation_creee': settings.EMAILJS_TEMPLATE_RESERVATION_ID,
-        'reservation_admin': settings.EMAILJS_TEMPLATE_ADMIN_RESERVATION_ID,
-        'facture_emise': settings.EMAILJS_TEMPLATE_FACTURE_ID,
+        'reservation_creee': getattr(settings, 'EMAILJS_TEMPLATE_RESERVATION_ID', ''),
+        'reservation_admin': getattr(settings, 'EMAILJS_TEMPLATE_ADMIN_RESERVATION_ID', ''),
+        'facture_emise': getattr(settings, 'EMAILJS_TEMPLATE_FACTURE_ID', ''),
     }
-    return templates.get(type_notif) or settings.EMAILJS_TEMPLATE_ID
+    return templates.get(type_notif) or getattr(settings, 'EMAILJS_TEMPLATE_ID', '')
 
 
 def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params=None) -> None:
     template_id = _emailjs_template_id(type_notif)
     missing = [
         name for name, value in {
-            'EMAILJS_SERVICE_ID': settings.EMAILJS_SERVICE_ID,
-            'EMAILJS_PUBLIC_KEY': settings.EMAILJS_PUBLIC_KEY,
-            'EMAILJS_PRIVATE_KEY': settings.EMAILJS_PRIVATE_KEY,
+            'EMAILJS_SERVICE_ID': getattr(settings, 'EMAILJS_SERVICE_ID', ''),
+            'EMAILJS_PUBLIC_KEY': getattr(settings, 'EMAILJS_PUBLIC_KEY', ''),
+            'EMAILJS_PRIVATE_KEY': getattr(settings, 'EMAILJS_PRIVATE_KEY', ''),
             'EMAILJS_TEMPLATE_ID': template_id,
         }.items()
         if not value
@@ -68,26 +72,74 @@ def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params
     response.raise_for_status()
 
 
+def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
+    """Envoi SMTP via Django (Gmail ou autre). Lève une exception en cas d'échec."""
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+    host_password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+    backend = getattr(settings, 'EMAIL_BACKEND', '')
+
+    # Diagnostic préventif — log les infos de config (sans le mot de passe)
+    logger.info(
+        'SMTP config — backend=%s host=%s port=%s tls=%s user=%s from=%s',
+        backend,
+        getattr(settings, 'EMAIL_HOST', ''),
+        getattr(settings, 'EMAIL_PORT', ''),
+        getattr(settings, 'EMAIL_USE_TLS', ''),
+        host_user,
+        from_email,
+    )
+
+    if not host_user or not host_password:
+        raise RuntimeError(
+            'EMAIL_HOST_USER ou EMAIL_HOST_PASSWORD manquant. '
+            'Vérifiez les variables d\'environnement sur Render.'
+        )
+
+    if not from_email:
+        raise RuntimeError(
+            'DEFAULT_FROM_EMAIL manquant. '
+            'Vérifiez les variables d\'environnement sur Render.'
+        )
+
+    send_mail(
+        subject=sujet,
+        message=corps,
+        from_email=from_email,
+        recipient_list=[destinataire],
+        fail_silently=False,
+    )
+
+
 def envoyer_notification(type_notif, destinataire, sujet, corps, reservation=None, params=None) -> bool:
     if not destinataire:
+        logger.warning('envoyer_notification : destinataire vide, abandon.')
         return False
 
+    provider = getattr(settings, 'EMAIL_PROVIDER', 'django').strip().lower()
+    logger.info('Envoi notification type=%s provider=%s to=%s', type_notif, provider, destinataire)
+
     try:
-        if getattr(settings, 'EMAIL_PROVIDER', 'django') == 'emailjs':
+        if provider == 'emailjs':
             _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params=params)
         else:
-            send_mail(
-                subject=sujet,
-                message=corps,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[destinataire],
-                fail_silently=False,
-            )
+            _envoyer_notification_smtp(sujet, corps, destinataire)
+
         _enregistrer_log(type_notif, destinataire, sujet, corps, reservation, envoye=True)
+        logger.info('Notification envoyée avec succès type=%s to=%s', type_notif, destinataire)
         return True
+
     except Exception as exc:
-        logger.exception('Echec envoi notification CarLoc : %s', exc)
-        _enregistrer_log(type_notif, destinataire, sujet, corps, reservation, envoye=False, erreur=str(exc))
+        erreur_detail = traceback.format_exc()
+        logger.error(
+            'Echec envoi notification type=%s to=%s provider=%s erreur=%s\n%s',
+            type_notif, destinataire, provider, exc, erreur_detail,
+        )
+        _enregistrer_log(
+            type_notif, destinataire, sujet, corps, reservation,
+            envoye=False,
+            erreur=f'{type(exc).__name__}: {exc}',
+        )
         return False
 
 
