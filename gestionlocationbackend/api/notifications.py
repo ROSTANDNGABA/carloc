@@ -72,18 +72,50 @@ def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params
     response.raise_for_status()
 
 
-def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
-    """Envoi SMTP via Django (Gmail ou autre). Lève une exception en cas d'échec."""
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '')
-    host_user = getattr(settings, 'EMAIL_HOST_USER', '')
-    host_password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
-    backend = getattr(settings, 'EMAIL_BACKEND', '')
+def _envoyer_notification_brevo(destinataire, sujet, corps) -> None:
+    """Envoi via l'API HTTP Brevo (ex-Sendinblue). Fonctionne sur Render free tier."""
+    api_key = getattr(settings, 'BREVO_API_KEY', '').strip()
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '').strip()
+    from_name = getattr(settings, 'BREVO_FROM_NAME', 'CarLoc').strip()
 
-    # Diagnostic préventif — log les infos de config (sans le mot de passe)
+    if not api_key:
+        raise RuntimeError(
+            'BREVO_API_KEY manquant. Créez un compte sur brevo.com et ajoutez la clé API sur Render.'
+        )
+    if not from_email:
+        raise RuntimeError('DEFAULT_FROM_EMAIL manquant.')
+
+    response = requests.post(
+        'https://api.brevo.com/v3/smtp/email',
+        headers={
+            'api-key': api_key,
+            'Content-Type': 'application/json',
+        },
+        json={
+            'sender': {'name': from_name, 'email': from_email},
+            'to': [{'email': destinataire}],
+            'subject': sujet,
+            'textContent': corps,
+        },
+        timeout=15,
+    )
+    if response.status_code not in (200, 201):
+        raise RuntimeError(
+            f'Brevo API erreur {response.status_code}: {response.text}'
+        )
+
+
+def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
+    """Envoi SMTP via Django. Attention : bloqué sur Render Free tier."""
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '').strip()
+    host_user = getattr(settings, 'EMAIL_HOST_USER', '').strip()
+    host_password = getattr(settings, 'EMAIL_HOST_PASSWORD', '').strip()
+    backend = getattr(settings, 'EMAIL_BACKEND', '').strip()
+
     logger.info(
         'SMTP config — backend=%s host=%s port=%s tls=%s user=%s from=%s',
         backend,
-        getattr(settings, 'EMAIL_HOST', ''),
+        getattr(settings, 'EMAIL_HOST', '').strip(),
         getattr(settings, 'EMAIL_PORT', ''),
         getattr(settings, 'EMAIL_USE_TLS', ''),
         host_user,
@@ -92,15 +124,10 @@ def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
 
     if not host_user or not host_password:
         raise RuntimeError(
-            'EMAIL_HOST_USER ou EMAIL_HOST_PASSWORD manquant. '
-            'Vérifiez les variables d\'environnement sur Render.'
+            'EMAIL_HOST_USER ou EMAIL_HOST_PASSWORD manquant.'
         )
-
     if not from_email:
-        raise RuntimeError(
-            'DEFAULT_FROM_EMAIL manquant. '
-            'Vérifiez les variables d\'environnement sur Render.'
-        )
+        raise RuntimeError('DEFAULT_FROM_EMAIL manquant.')
 
     send_mail(
         subject=sujet,
@@ -122,11 +149,13 @@ def envoyer_notification(type_notif, destinataire, sujet, corps, reservation=Non
     try:
         if provider == 'emailjs':
             _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params=params)
+        elif provider == 'brevo':
+            _envoyer_notification_brevo(destinataire, sujet, corps)
         else:
             _envoyer_notification_smtp(sujet, corps, destinataire)
 
         _enregistrer_log(type_notif, destinataire, sujet, corps, reservation, envoye=True)
-        logger.info('Notification envoyée avec succès type=%s to=%s', type_notif, destinataire)
+        logger.info('Notification envoyee avec succes type=%s to=%s', type_notif, provider, destinataire)
         return True
 
     except Exception as exc:
