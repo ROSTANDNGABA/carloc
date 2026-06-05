@@ -36,7 +36,6 @@ jobs:
       DB_PORT: 5432
       SECRET_KEY: ci-secret-key
       DEBUG: 'True'
-      CARLOC_DISABLE_LOGIN_THROTTLE: '1'
       CELERY_TASK_ALWAYS_EAGER: '1'
       CARLOC_FILE_ENCRYPTION_KEY: 1p4BFVkugW33nYov86Ej4qF3aPOWhaacQpzfEVFmujk=
 

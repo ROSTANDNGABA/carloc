@@ -1,14 +1,14 @@
-"""Configuration pytest partagée."""
-
+"""Configuration pytest partagee."""
 import pytest
-from django.conf import settings
 
 
 @pytest.fixture(autouse=True)
-def disable_throttling_for_tests(settings):
-    """Évite les 429 sur la suite de tests API existante."""
+def disable_throttling(settings, request):
+    """Evite les 429 sur la suite, sauf pour les tests du rate limiting."""
+    if request.node.path.name == 'test_rate_limit.py':
+        return
+
     settings.REST_FRAMEWORK = {
         **settings.REST_FRAMEWORK,
         'DEFAULT_THROTTLE_CLASSES': [],
     }
-    settings.CARLOC_DISABLE_LOGIN_THROTTLE = True
