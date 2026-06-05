@@ -37,12 +37,11 @@ services:
       - key: CELERY_TASK_ALWAYS_EAGER
         value: true
 
-      # ----------------------------------------------------------------
-      # EMAIL — provider "django" = SMTP Gmail (recommandé côté serveur)
-      # Pour utiliser EmailJS à la place, passer EMAIL_PROVIDER=emailjs
-      # ----------------------------------------------------------------
+      # Envoi d'emails via EmailJS
       - key: EMAIL_PROVIDER
-        value: django
+        value: emailjs
+
+      # SMTP Django garde une configuration de secours si EMAIL_PROVIDER=django
       - key: EMAIL_BACKEND
         value: django.core.mail.backends.smtp.EmailBackend
       - key: EMAIL_HOST
@@ -62,7 +61,7 @@ services:
       - key: CARLOC_ADMIN_EMAIL
         sync: false
 
-      # EmailJS (optionnel, utilisé si EMAIL_PROVIDER=emailjs)
+      # EmailJS
       - key: EMAILJS_SERVICE_ID
         sync: false
       - key: EMAILJS_TEMPLATE_ID
