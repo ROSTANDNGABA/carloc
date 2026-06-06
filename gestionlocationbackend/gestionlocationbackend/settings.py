@@ -359,6 +359,8 @@ EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
 # Email provider: "django" utilise SMTP Django, "emailjs" utilise l'API REST EmailJS.
 # Sur Render, définir EMAIL_PROVIDER=django pour utiliser Gmail SMTP (recommandé).
 EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'django').strip().lower()
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
+BREVO_FROM_NAME = os.environ.get('BREVO_FROM_NAME', 'CarLoc').strip()
 EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
 EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
 EMAILJS_TEMPLATE_RESERVATION_ID = os.environ.get('EMAILJS_TEMPLATE_RESERVATION_ID', EMAILJS_TEMPLATE_ID).strip()
