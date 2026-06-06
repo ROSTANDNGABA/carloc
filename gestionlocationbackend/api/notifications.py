@@ -72,43 +72,33 @@ def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params
     response.raise_for_status()
 
 
-def _envoyer_notification_brevo(destinataire, sujet, corps) -> None:
-    """Envoi via l'API HTTP Brevo (ex-Sendinblue). Fonctionne sur Render free tier."""
-    raw_key = getattr(settings, 'BREVO_API_KEY', '')
-    # Supprimer uniquement les espaces et sauts de ligne
-    api_key = raw_key.strip().replace('\n', '').replace('\r', '').replace('\t', '')
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '').strip()
-    from_name = getattr(settings, 'BREVO_FROM_NAME', 'CarLoc').strip()
-
-    logger.info('BREVO_API_KEY longueur=%d premiers_chars=%s fin=%s', 
-                len(api_key), api_key[:12] if api_key else 'VIDE',
-                api_key[-15:] if api_key else 'VIDE')
+def _envoyer_notification_resend(destinataire, sujet, corps) -> None:
+    """Envoi via l'API HTTP Resend. Fonctionne sur Render free tier (3000 emails/mois gratuits)."""
+    api_key = getattr(settings, 'RESEND_API_KEY', '').strip()
+    from_email = getattr(settings, 'RESEND_FROM_EMAIL', '').strip()
+    from_name = getattr(settings, 'RESEND_FROM_NAME', 'CarLoc').strip()
 
     if not api_key:
-        raise RuntimeError(
-            'BREVO_API_KEY manquant. Créez un compte sur brevo.com et ajoutez la clé API sur Render.'
-        )
+        raise RuntimeError('RESEND_API_KEY manquant.')
     if not from_email:
-        raise RuntimeError('DEFAULT_FROM_EMAIL manquant.')
+        raise RuntimeError('RESEND_FROM_EMAIL manquant.')
 
     response = requests.post(
-        'https://api.brevo.com/v3/smtp/email',
+        'https://api.resend.com/emails',
         headers={
-            'api-key': api_key,
+            'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json',
         },
         json={
-            'sender': {'name': from_name, 'email': from_email},
-            'to': [{'email': destinataire}],
+            'from': f'{from_name} <{from_email}>',
+            'to': [destinataire],
             'subject': sujet,
-            'textContent': corps,
+            'text': corps,
         },
         timeout=15,
     )
     if response.status_code not in (200, 201):
-        raise RuntimeError(
-            f'Brevo API erreur {response.status_code}: {response.text}'
-        )
+        raise RuntimeError(f'Resend API erreur {response.status_code}: {response.text}')
 
 
 def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
@@ -156,7 +146,9 @@ def envoyer_notification(type_notif, destinataire, sujet, corps, reservation=Non
         if provider == 'emailjs':
             _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params=params)
         elif provider == 'brevo':
-            _envoyer_notification_brevo(destinataire, sujet, corps)
+            _envoyer_notification_resend(destinataire, sujet, corps)
+        elif provider == 'resend':
+            _envoyer_notification_resend(destinataire, sujet, corps)
         else:
             _envoyer_notification_smtp(sujet, corps, destinataire)
 
