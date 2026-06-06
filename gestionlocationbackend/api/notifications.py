@@ -80,7 +80,9 @@ def _envoyer_notification_brevo(destinataire, sujet, corps) -> None:
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '').strip()
     from_name = getattr(settings, 'BREVO_FROM_NAME', 'CarLoc').strip()
 
-    logger.info('BREVO_API_KEY longueur=%d premiers_chars=%s', len(api_key), api_key[:12] if api_key else 'VIDE')
+    logger.info('BREVO_API_KEY longueur=%d premiers_chars=%s fin=%s', 
+                len(api_key), api_key[:12] if api_key else 'VIDE',
+                api_key[-15:] if api_key else 'VIDE')
 
     if not api_key:
         raise RuntimeError(
