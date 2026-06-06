@@ -75,8 +75,8 @@ def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params
 def _envoyer_notification_brevo(destinataire, sujet, corps) -> None:
     """Envoi via l'API HTTP Brevo (ex-Sendinblue). Fonctionne sur Render free tier."""
     raw_key = getattr(settings, 'BREVO_API_KEY', '')
-    # Nettoyer tous les caractères invisibles (sauts de ligne, espaces, tabs)
-    api_key = ''.join(c for c in raw_key if c.isprintable() and c != ' ')
+    # Garder uniquement les caractères alphanumériques et tirets (format clé Brevo)
+    api_key = ''.join(c for c in raw_key if c.isalnum() or c == '-')
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '').strip()
     from_name = getattr(settings, 'BREVO_FROM_NAME', 'CarLoc').strip()
 
