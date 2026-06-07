@@ -28,5 +28,6 @@ django-storages==1.14.6
 django-cloudinary-storage==0.3.0
 cloudinary==1.44.1
 boto3==1.37.14
+django-anymail==12.0
 gunicorn==23.0.0
 whitenoise==6.9.0

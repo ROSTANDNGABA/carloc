@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'jazzmin',
     'cloudinary_storage',
     'cloudinary',
+    'anymail',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -364,6 +365,12 @@ BREVO_FROM_NAME = os.environ.get('BREVO_FROM_NAME', 'CarLoc').strip()
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '').strip()
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', '').strip()
 RESEND_FROM_NAME = os.environ.get('RESEND_FROM_NAME', 'CarLoc').strip()
+
+# Anymail — Mailgun (API HTTP, fonctionne sur Render free tier)
+ANYMAIL = {
+    'MAILGUN_API_KEY': os.environ.get('MAILGUN_API_KEY', '').strip(),
+    'MAILGUN_SENDER_DOMAIN': os.environ.get('MAILGUN_DOMAIN', '').strip(),
+}
 EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
 EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
 EMAILJS_TEMPLATE_RESERVATION_ID = os.environ.get('EMAILJS_TEMPLATE_RESERVATION_ID', EMAILJS_TEMPLATE_ID).strip()
