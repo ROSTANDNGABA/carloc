@@ -368,7 +368,7 @@ RESEND_FROM_NAME = os.environ.get('RESEND_FROM_NAME', 'CarLoc').strip()
 
 # Anymail — Brevo (API HTTP, fonctionne sur Render free tier)
 ANYMAIL = {
-    'BREVO_API_KEY': os.environ.get('BREVO_API_KEY', '').strip(),
+    'BREVO_API_KEY': os.environ.get('ANYMAIL_BREVO_API_KEY', os.environ.get('BREVO_API_KEY', '')).strip(),
 }
 EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
 EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
