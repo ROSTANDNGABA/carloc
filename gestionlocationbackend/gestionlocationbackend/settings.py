@@ -366,10 +366,9 @@ RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '').strip()
 RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', '').strip()
 RESEND_FROM_NAME = os.environ.get('RESEND_FROM_NAME', 'CarLoc').strip()
 
-# Anymail — Mailgun (API HTTP, fonctionne sur Render free tier)
+# Anymail — Brevo (API HTTP, fonctionne sur Render free tier)
 ANYMAIL = {
-    'MAILGUN_API_KEY': os.environ.get('MAILGUN_API_KEY', '').strip(),
-    'MAILGUN_SENDER_DOMAIN': os.environ.get('MAILGUN_DOMAIN', '').strip(),
+    'BREVO_API_KEY': os.environ.get('BREVO_API_KEY', '').strip(),
 }
 EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
 EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
