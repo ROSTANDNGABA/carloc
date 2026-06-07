@@ -73,7 +73,7 @@ def _envoyer_notification_emailjs(type_notif, destinataire, sujet, corps, params
 
 
 def _envoyer_notification_resend(destinataire, sujet, corps) -> None:
-    """Envoi via l'API HTTP Resend. Fonctionne sur Render free tier (3000 emails/mois gratuits)."""
+    """Envoi via l'API HTTP Resend."""
     api_key = getattr(settings, 'RESEND_API_KEY', '').strip()
     from_email = getattr(settings, 'RESEND_FROM_EMAIL', '').strip()
     from_name = getattr(settings, 'RESEND_FROM_NAME', 'CarLoc').strip()
@@ -99,6 +99,35 @@ def _envoyer_notification_resend(destinataire, sujet, corps) -> None:
     )
     if response.status_code not in (200, 201):
         raise RuntimeError(f'Resend API erreur {response.status_code}: {response.text}')
+
+
+def _envoyer_notification_mailgun(destinataire, sujet, corps) -> None:
+    """Envoi via l'API HTTP Mailgun. Domaine sandbox gratuit, vers destinataires autorisés."""
+    api_key = getattr(settings, 'MAILGUN_API_KEY', '').strip()
+    domain = getattr(settings, 'MAILGUN_DOMAIN', '').strip()
+    from_email = getattr(settings, 'MAILGUN_FROM_EMAIL', '').strip()
+    from_name = getattr(settings, 'MAILGUN_FROM_NAME', 'CarLoc').strip()
+
+    if not api_key:
+        raise RuntimeError('MAILGUN_API_KEY manquant.')
+    if not domain:
+        raise RuntimeError('MAILGUN_DOMAIN manquant.')
+    if not from_email:
+        raise RuntimeError('MAILGUN_FROM_EMAIL manquant.')
+
+    response = requests.post(
+        f'https://api.mailgun.net/v3/{domain}/messages',
+        auth=('api', api_key),
+        data={
+            'from': f'{from_name} <{from_email}>',
+            'to': destinataire,
+            'subject': sujet,
+            'text': corps,
+        },
+        timeout=15,
+    )
+    if response.status_code not in (200, 201):
+        raise RuntimeError(f'Mailgun API erreur {response.status_code}: {response.text}')
 
 
 def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
@@ -153,7 +182,7 @@ def envoyer_notification(type_notif, destinataire, sujet, corps, reservation=Non
             _envoyer_notification_smtp(sujet, corps, destinataire)
 
         _enregistrer_log(type_notif, destinataire, sujet, corps, reservation, envoye=True)
-        logger.info('Notification envoyee avec succes type=%s to=%s', type_notif, provider, destinataire)
+        logger.info('Notification envoyee avec succes type=%s provider=%s to=%s', type_notif, provider, destinataire)
         return True
 
     except Exception as exc:
