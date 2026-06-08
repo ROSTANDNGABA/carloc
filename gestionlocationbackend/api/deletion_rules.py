@@ -14,8 +14,8 @@ def valider_suppression_client(client):
         date_fin__gte=today,
     ).exists():
         raise DeletionNotAllowedError(
-            'Impossible de supprimer ce client : réservation(s) active(s) ou à venir.',
-            code='client_has_active_reservations',
+            "Impossible de supprimer ce client : réservation(s) active(s) ou à venir.",
+            code="client_has_active_reservations",
         )
 
 
@@ -27,6 +27,6 @@ def valider_suppression_vehicule(vehicule):
         date_fin__gte=today,
     ).exists():
         raise DeletionNotAllowedError(
-            'Impossible de supprimer ce véhicule : réservation(s) active(s) ou à venir.',
-            code='vehicule_has_active_reservations',
+            "Impossible de supprimer ce véhicule : réservation(s) active(s) ou à venir.",
+            code="vehicule_has_active_reservations",
         )

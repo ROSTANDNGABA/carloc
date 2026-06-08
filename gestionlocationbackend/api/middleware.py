@@ -4,10 +4,10 @@ from .audit_context import reset_audit_context, set_audit_context
 
 
 def _client_ip(request):
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
     if forwarded:
-        return forwarded.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
+        return forwarded.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")
 
 
 class AuditContextMiddleware:
@@ -15,7 +15,11 @@ class AuditContextMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        user = request.user if getattr(request, 'user', None) and request.user.is_authenticated else None
+        user = (
+            request.user
+            if getattr(request, "user", None) and request.user.is_authenticated
+            else None
+        )
         token = set_audit_context(user=user, ip_address=_client_ip(request))
         try:
             return self.get_response(request)

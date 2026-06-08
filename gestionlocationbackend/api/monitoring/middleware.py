@@ -14,16 +14,20 @@ class PrometheusMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if not getattr(settings, 'PROMETHEUS_ENABLED', False):
+        if not getattr(settings, "PROMETHEUS_ENABLED", False):
             return self.get_response(request)
 
         path = request.path
-        if path == '/metrics' or path.endswith('/health/'):
+        if path == "/metrics" or path.endswith("/health/"):
             return self.get_response(request)
 
-        view_name = 'unknown'
+        view_name = "unknown"
         if request.resolver_match is not None:
-            view_name = request.resolver_match.view_name or request.resolver_match.url_name or 'unknown'
+            view_name = (
+                request.resolver_match.view_name
+                or request.resolver_match.url_name
+                or "unknown"
+            )
 
         start = time.perf_counter()
         response = self.get_response(request)

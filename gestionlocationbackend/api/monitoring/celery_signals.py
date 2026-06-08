@@ -15,12 +15,12 @@ def _celery_task_prerun(sender=None, task_id=None, **kwargs):
 def _celery_task_success(sender=None, task_id=None, state=None, **kwargs):
     from django.conf import settings
 
-    if not getattr(settings, 'PROMETHEUS_ENABLED', False):
+    if not getattr(settings, "PROMETHEUS_ENABLED", False):
         return
-    if state == 'SUCCESS' and sender:
+    if state == "SUCCESS" and sender:
         from .prometheus import record_celery_task
 
-        record_celery_task(sender.name, 'success')
+        record_celery_task(sender.name, "success")
     if task_id:
         _task_start.pop(task_id, None)
 
@@ -29,11 +29,11 @@ def _celery_task_success(sender=None, task_id=None, state=None, **kwargs):
 def _celery_task_failure(sender=None, task_id=None, **kwargs):
     from django.conf import settings
 
-    if not getattr(settings, 'PROMETHEUS_ENABLED', False):
+    if not getattr(settings, "PROMETHEUS_ENABLED", False):
         return
     if sender:
         from .prometheus import record_celery_task
 
-        record_celery_task(sender.name, 'failure')
+        record_celery_task(sender.name, "failure")
     if task_id:
         _task_start.pop(task_id, None)

@@ -7,20 +7,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0001_initial'),
+        ("api", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Maintenance',
+            name="Maintenance",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_operation', models.DateField()),
-                ('type_operation', models.CharField(choices=[('revision', 'Révision'), ('reparation', 'Réparation'), ('controle', 'Contrôle Technique'), ('pneus', 'Pneumatiques')], max_length=20)),
-                ('description', models.TextField()),
-                ('cout', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('garage', models.CharField(max_length=100)),
-                ('vehicule', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='maintenances', to='api.vehicule')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date_operation", models.DateField()),
+                (
+                    "type_operation",
+                    models.CharField(
+                        choices=[
+                            ("revision", "Révision"),
+                            ("reparation", "Réparation"),
+                            ("controle", "Contrôle Technique"),
+                            ("pneus", "Pneumatiques"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("description", models.TextField()),
+                ("cout", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("garage", models.CharField(max_length=100)),
+                (
+                    "vehicule",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="maintenances",
+                        to="api.vehicule",
+                    ),
+                ),
             ],
         ),
     ]

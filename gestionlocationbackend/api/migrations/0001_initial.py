@@ -8,55 +8,138 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Client',
+            name="Client",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nom', models.CharField(max_length=100)),
-                ('prenom', models.CharField(max_length=100)),
-                ('email', models.EmailField(max_length=254, unique=True)),
-                ('telephone', models.CharField(max_length=20)),
-                ('num_permis', models.CharField(max_length=50, unique=True)),
-                ('piece_identite', models.FileField(blank=True, null=True, upload_to='documents_clients/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nom", models.CharField(max_length=100)),
+                ("prenom", models.CharField(max_length=100)),
+                ("email", models.EmailField(max_length=254, unique=True)),
+                ("telephone", models.CharField(max_length=20)),
+                ("num_permis", models.CharField(max_length=50, unique=True)),
+                (
+                    "piece_identite",
+                    models.FileField(
+                        blank=True, null=True, upload_to="documents_clients/"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Vehicule',
+            name="Vehicule",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('immatriculation', models.CharField(max_length=20, unique=True)),
-                ('marque', models.CharField(max_length=50)),
-                ('modele', models.CharField(max_length=50)),
-                ('categorie', models.CharField(max_length=50)),
-                ('prix_journalier', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('statut', models.CharField(choices=[('disponible', 'Disponible'), ('loue', 'Loué'), ('maintenance', 'En maintenance')], default='disponible', max_length=20)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='vehicules/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("immatriculation", models.CharField(max_length=20, unique=True)),
+                ("marque", models.CharField(max_length=50)),
+                ("modele", models.CharField(max_length=50)),
+                ("categorie", models.CharField(max_length=50)),
+                (
+                    "prix_journalier",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                (
+                    "statut",
+                    models.CharField(
+                        choices=[
+                            ("disponible", "Disponible"),
+                            ("loue", "Loué"),
+                            ("maintenance", "En maintenance"),
+                        ],
+                        default="disponible",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="vehicules/"),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Reservation',
+            name="Reservation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_debut', models.DateField()),
-                ('date_fin', models.DateField()),
-                ('date_creation', models.DateTimeField(auto_now_add=True)),
-                ('est_annulee', models.BooleanField(default=False)),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reservations', to='api.client')),
-                ('vehicule', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reservations', to='api.vehicule')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date_debut", models.DateField()),
+                ("date_fin", models.DateField()),
+                ("date_creation", models.DateTimeField(auto_now_add=True)),
+                ("est_annulee", models.BooleanField(default=False)),
+                (
+                    "client",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reservations",
+                        to="api.client",
+                    ),
+                ),
+                (
+                    "vehicule",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reservations",
+                        to="api.vehicule",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Paiement',
+            name="Paiement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('montant_paye', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('mode_paiement', models.CharField(choices=[('especes', 'Espèces'), ('carte', 'Carte'), ('virement', 'Virement')], max_length=20)),
-                ('date_paiement', models.DateTimeField(auto_now_add=True)),
-                ('reservation', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='api.reservation')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("montant_paye", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "mode_paiement",
+                    models.CharField(
+                        choices=[
+                            ("especes", "Espèces"),
+                            ("carte", "Carte"),
+                            ("virement", "Virement"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("date_paiement", models.DateTimeField(auto_now_add=True)),
+                (
+                    "reservation",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.reservation",
+                    ),
+                ),
             ],
         ),
     ]

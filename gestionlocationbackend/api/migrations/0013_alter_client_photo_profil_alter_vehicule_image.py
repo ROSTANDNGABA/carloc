@@ -7,18 +7,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0012_alter_client_permis_conduire_and_more'),
+        ("api", "0012_alter_client_permis_conduire_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='photo_profil',
-            field=models.ImageField(blank=True, null=True, storage=api.storages.get_public_image_storage, upload_to='clients/photos/'),
+            model_name="client",
+            name="photo_profil",
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                storage=api.storages.get_public_image_storage,
+                upload_to="clients/photos/",
+            ),
         ),
         migrations.AlterField(
-            model_name='vehicule',
-            name='image',
-            field=models.ImageField(blank=True, null=True, storage=api.storages.get_public_image_storage, upload_to='vehicules/'),
+            model_name="vehicule",
+            name="image",
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                storage=api.storages.get_public_image_storage,
+                upload_to="vehicules/",
+            ),
         ),
     ]

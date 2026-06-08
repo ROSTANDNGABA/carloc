@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0006_facture_notificationlog_permis'),
+        ("api", "0006_facture_notificationlog_permis"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='num_cni',
+            model_name="client",
+            name="num_cni",
             field=models.CharField(blank=True, max_length=50, null=True, unique=True),
         ),
         migrations.AddField(
-            model_name='client',
-            name='photo_profil',
-            field=models.ImageField(blank=True, null=True, upload_to='clients/photos/'),
+            model_name="client",
+            name="photo_profil",
+            field=models.ImageField(blank=True, null=True, upload_to="clients/photos/"),
         ),
         migrations.AddField(
-            model_name='client',
-            name='solde',
+            model_name="client",
+            name="solde",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=12),
         ),
         migrations.AlterField(
-            model_name='client',
-            name='num_permis',
+            model_name="client",
+            name="num_permis",
             field=models.CharField(blank=True, max_length=50, null=True, unique=True),
         ),
     ]

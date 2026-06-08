@@ -17,17 +17,20 @@ class LoginRateLimitTests(APITestCase):
 
     def setUp(self):
         User.objects.create_user(
-            username='throttle@test.com',
-            email='throttle@test.com',
-            password='goodpass123',
+            username="throttle@test.com",
+            email="throttle@test.com",
+            password="goodpass123",
         )
         self.client = APIClient()
 
     def test_sixth_login_attempt_returns_429(self):
-        payload = {'username': 'wrong', 'password': 'wrong'}
+        payload = {"username": "wrong", "password": "wrong"}
         for _ in range(5):
-            response = self.client.post('/api/auth/login/', payload, format='json')
-            self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_400_BAD_REQUEST))
+            response = self.client.post("/api/auth/login/", payload, format="json")
+            self.assertIn(
+                response.status_code,
+                (status.HTTP_401_UNAUTHORIZED, status.HTTP_400_BAD_REQUEST),
+            )
 
-        response = self.client.post('/api/auth/login/', payload, format='json')
+        response = self.client.post("/api/auth/login/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)

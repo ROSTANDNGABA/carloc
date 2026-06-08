@@ -26,37 +26,39 @@ class HealthCheckView(APIView):
             200: OpenApiResponse(
                 description="Service en bonne santé",
                 response={
-                    'type': 'object',
-                    'properties': {
-                        'status': {'type': 'string', 'enum': ['ok', 'degraded']},
-                        'database': {'type': 'string'},
-                        'debug': {'type': 'boolean'}
-                    }
-                }
+                    "type": "object",
+                    "properties": {
+                        "status": {"type": "string", "enum": ["ok", "degraded"]},
+                        "database": {"type": "string"},
+                        "debug": {"type": "boolean"},
+                    },
+                },
             ),
-            503: OpenApiResponse(description="Service dégradé")
+            503: OpenApiResponse(description="Service dégradé"),
         },
-        tags=['Monitoring']
+        tags=["Monitoring"],
     )
     def get(self, request):
         db_ok = True
-        db_error = ''
+        db_error = ""
         try:
             with connection.cursor() as cursor:
-                cursor.execute('SELECT 1')
+                cursor.execute("SELECT 1")
         except Exception as exc:
             db_ok = False
             db_error = str(exc)
 
         payload = {
-            'status': 'ok' if db_ok else 'degraded',
-            'database': 'ok' if db_ok else 'error',
-            'debug': settings.DEBUG,
+            "status": "ok" if db_ok else "degraded",
+            "database": "ok" if db_ok else "error",
+            "debug": settings.DEBUG,
         }
         if db_error and settings.DEBUG:
-            payload['database_error'] = db_error
+            payload["database_error"] = db_error
 
-        http_status = status.HTTP_200_OK if db_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+        http_status = (
+            status.HTTP_200_OK if db_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+        )
         return Response(payload, status=http_status)
 
 
@@ -72,24 +74,24 @@ class PrometheusMetricsView(APIView):
         responses={
             200: OpenApiResponse(
                 description="Métriques au format Prometheus",
-                response={'type': 'string'}
+                response={"type": "string"},
             ),
             401: OpenApiResponse(description="Token invalide"),
-            404: OpenApiResponse(description="Prometheus désactivé")
+            404: OpenApiResponse(description="Prometheus désactivé"),
         },
-        tags=['Monitoring']
+        tags=["Monitoring"],
     )
     def get(self, request):
-        if not getattr(settings, 'PROMETHEUS_ENABLED', False):
+        if not getattr(settings, "PROMETHEUS_ENABLED", False):
             return Response(
-                {'detail': 'Prometheus désactivé. Définissez PROMETHEUS_ENABLED=1.'},
+                {"detail": "Prometheus désactivé. Définissez PROMETHEUS_ENABLED=1."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        token = getattr(settings, 'PROMETHEUS_METRICS_TOKEN', '') or ''
+        token = getattr(settings, "PROMETHEUS_METRICS_TOKEN", "") or ""
         if token:
-            auth = request.headers.get('Authorization', '')
-            if auth != f'Bearer {token}':
+            auth = request.headers.get("Authorization", "")
+            if auth != f"Bearer {token}":
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         return HttpResponse(
@@ -110,16 +112,19 @@ class SentryDebugView(APIView):
         responses={
             200: OpenApiResponse(
                 description="Exception envoyée à Sentry",
-                response={'type': 'object', 'properties': {'detail': {'type': 'string'}}}
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
             ),
-            400: OpenApiResponse(description="Sentry non configuré")
+            400: OpenApiResponse(description="Sentry non configuré"),
         },
-        tags=['Monitoring']
+        tags=["Monitoring"],
     )
     def post(self, request):
-        if not getattr(settings, 'SENTRY_DSN', ''):
+        if not getattr(settings, "SENTRY_DSN", ""):
             return Response(
-                {'detail': 'SENTRY_DSN non configuré.'},
+                {"detail": "SENTRY_DSN non configuré."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -130,6 +135,8 @@ class SentryDebugView(APIView):
         except ZeroDivisionError as exc:
             sentry_sdk.capture_exception(exc)
 
-        return Response({
-            'detail': 'Exception de test envoyée à Sentry. Vérifiez votre tableau de bord.',
-        })
+        return Response(
+            {
+                "detail": "Exception de test envoyée à Sentry. Vérifiez votre tableau de bord.",
+            }
+        )

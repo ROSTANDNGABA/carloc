@@ -7,74 +7,97 @@ from django.db.models import Sum
 
 
 def backfill_total_paye_cache(apps, schema_editor):
-    Reservation = apps.get_model('api', 'Reservation')
-    Paiement = apps.get_model('api', 'Paiement')
+    Reservation = apps.get_model("api", "Reservation")
+    Paiement = apps.get_model("api", "Paiement")
     for reservation in Reservation.objects.all():
-        total = (
-            Paiement.objects.filter(reservation_id=reservation.pk).aggregate(
-                total=Sum('montant_paye')
-            )['total']
-            or Decimal('0')
-        )
+        total = Paiement.objects.filter(reservation_id=reservation.pk).aggregate(
+            total=Sum("montant_paye")
+        )["total"] or Decimal("0")
         reservation.total_paye_cache = total
-        reservation.save(update_fields=['total_paye_cache'])
+        reservation.save(update_fields=["total_paye_cache"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0009_alter_client_num_cni_alter_client_num_permis_and_more'),
+        ("api", "0009_alter_client_num_cni_alter_client_num_permis_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reservation',
-            name='total_paye_cache',
-            field=models.DecimalField(decimal_places=2, default=0, help_text='Cache du total payé (mis à jour après chaque paiement)', max_digits=12),
+            model_name="reservation",
+            name="total_paye_cache",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=0,
+                help_text="Cache du total payé (mis à jour après chaque paiement)",
+                max_digits=12,
+            ),
         ),
         migrations.RunPython(backfill_total_paye_cache, migrations.RunPython.noop),
         migrations.AddIndex(
-            model_name='contrat',
-            index=models.Index(fields=['reservation'], name='api_contrat_reserva_88e3bc_idx'),
+            model_name="contrat",
+            index=models.Index(
+                fields=["reservation"], name="api_contrat_reserva_88e3bc_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='contrat',
-            index=models.Index(fields=['kilometrage_retour'], name='api_contrat_kilomet_05f110_idx'),
+            model_name="contrat",
+            index=models.Index(
+                fields=["kilometrage_retour"], name="api_contrat_kilomet_05f110_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='paiement',
-            index=models.Index(fields=['reservation'], name='api_paiemen_reserva_577dbe_idx'),
+            model_name="paiement",
+            index=models.Index(
+                fields=["reservation"], name="api_paiemen_reserva_577dbe_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='paiement',
-            index=models.Index(fields=['mode_paiement'], name='api_paiemen_mode_pa_be1a8f_idx'),
+            model_name="paiement",
+            index=models.Index(
+                fields=["mode_paiement"], name="api_paiemen_mode_pa_be1a8f_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='paiement',
-            index=models.Index(fields=['-date_paiement'], name='api_paiemen_date_pa_c91500_idx'),
+            model_name="paiement",
+            index=models.Index(
+                fields=["-date_paiement"], name="api_paiemen_date_pa_c91500_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='reservation',
-            index=models.Index(fields=['client', 'est_annulee'], name='api_reserva_client__417451_idx'),
+            model_name="reservation",
+            index=models.Index(
+                fields=["client", "est_annulee"], name="api_reserva_client__417451_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='reservation',
-            index=models.Index(fields=['vehicule', 'date_debut', 'date_fin'], name='api_reserva_vehicul_092795_idx'),
+            model_name="reservation",
+            index=models.Index(
+                fields=["vehicule", "date_debut", "date_fin"],
+                name="api_reserva_vehicul_092795_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='reservation',
-            index=models.Index(fields=['-date_creation'], name='api_reserva_date_cr_9365a4_idx'),
+            model_name="reservation",
+            index=models.Index(
+                fields=["-date_creation"], name="api_reserva_date_cr_9365a4_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='reservation',
-            index=models.Index(fields=['est_annulee'], name='api_reserva_est_ann_8479f3_idx'),
+            model_name="reservation",
+            index=models.Index(
+                fields=["est_annulee"], name="api_reserva_est_ann_8479f3_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='vehicule',
-            index=models.Index(fields=['statut'], name='api_vehicul_statut_d97770_idx'),
+            model_name="vehicule",
+            index=models.Index(fields=["statut"], name="api_vehicul_statut_d97770_idx"),
         ),
         migrations.AddIndex(
-            model_name='vehicule',
-            index=models.Index(fields=['categorie'], name='api_vehicul_categor_4cd158_idx'),
+            model_name="vehicule",
+            index=models.Index(
+                fields=["categorie"], name="api_vehicul_categor_4cd158_idx"
+            ),
         ),
     ]

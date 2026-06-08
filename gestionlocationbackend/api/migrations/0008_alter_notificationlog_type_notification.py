@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_client_num_cni_client_photo_profil_client_solde_and_more'),
+        ("api", "0007_client_num_cni_client_photo_profil_client_solde_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='notificationlog',
-            name='type_notification',
-            field=models.CharField(choices=[('reservation_creee', 'Réservation créée'), ('reservation_annulee', 'Réservation annulée'), ('paiement_recu', 'Paiement reçu'), ('facture_emise', 'Facture emise')], max_length=30),
+            model_name="notificationlog",
+            name="type_notification",
+            field=models.CharField(
+                choices=[
+                    ("reservation_creee", "Réservation créée"),
+                    ("reservation_annulee", "Réservation annulée"),
+                    ("paiement_recu", "Paiement reçu"),
+                    ("facture_emise", "Facture emise"),
+                ],
+                max_length=30,
+            ),
         ),
     ]

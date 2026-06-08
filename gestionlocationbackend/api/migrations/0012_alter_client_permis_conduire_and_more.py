@@ -8,22 +8,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0011_config_softdelete_celery'),
+        ("api", "0011_config_softdelete_celery"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='client',
-            name='permis_conduire',
-            field=models.FileField(blank=True, help_text='Scan du permis de conduire', null=True, storage=api.storages.get_client_document_storage, upload_to='documents_clients/permis/', validators=[api.validators.validate_document_file]),
+            model_name="client",
+            name="permis_conduire",
+            field=models.FileField(
+                blank=True,
+                help_text="Scan du permis de conduire",
+                null=True,
+                storage=api.storages.get_client_document_storage,
+                upload_to="documents_clients/permis/",
+                validators=[api.validators.validate_document_file],
+            ),
         ),
         migrations.AlterField(
-            model_name='client',
-            name='piece_identite',
-            field=models.FileField(blank=True, help_text="Scan de la pièce d'identité", null=True, storage=api.storages.get_client_document_storage, upload_to='documents_clients/identite/', validators=[api.validators.validate_document_file]),
+            model_name="client",
+            name="piece_identite",
+            field=models.FileField(
+                blank=True,
+                help_text="Scan de la pièce d'identité",
+                null=True,
+                storage=api.storages.get_client_document_storage,
+                upload_to="documents_clients/identite/",
+                validators=[api.validators.validate_document_file],
+            ),
         ),
         migrations.AddConstraint(
-            model_name='facture',
-            constraint=models.UniqueConstraint(fields=('reservation', 'type_facture'), name='unique_facture_reservation_type'),
+            model_name="facture",
+            constraint=models.UniqueConstraint(
+                fields=("reservation", "type_facture"),
+                name="unique_facture_reservation_type",
+            ),
         ),
     ]

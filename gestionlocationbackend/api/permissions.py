@@ -30,15 +30,21 @@ class IsOwnerClientOrAdmin(permissions.BasePermission):
             return False
         if request.user.is_staff:
             return True
-        if view.action in ('create',):
+        if view.action in ("create",):
             return True
-        return hasattr(request.user, 'client_profile')
+        return hasattr(request.user, "client_profile")
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
-        if view.action in permissions.SAFE_METHODS or view.action in ('update', 'partial_update'):
-            return hasattr(request.user, 'client_profile') and obj.user_id == request.user.id
+        if view.action in permissions.SAFE_METHODS or view.action in (
+            "update",
+            "partial_update",
+        ):
+            return (
+                hasattr(request.user, "client_profile")
+                and obj.user_id == request.user.id
+            )
         return False
 
 
@@ -49,7 +55,7 @@ class IsFactureOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
-        if hasattr(request.user, 'client_profile'):
+        if hasattr(request.user, "client_profile"):
             return obj.reservation.client_id == request.user.client_profile.id
         return False
 
@@ -61,6 +67,6 @@ class IsReservationOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_staff:
             return True
-        if not hasattr(request.user, 'client_profile'):
+        if not hasattr(request.user, "client_profile"):
             return False
         return obj.client_id == request.user.client_profile.id

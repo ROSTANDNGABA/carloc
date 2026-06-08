@@ -27,4 +27,4 @@ class SoftDeleteMixin(models.Model):
     def delete(self, using=None, keep_parents=False):
         self.is_active = False
         self.deleted_at = timezone.now()
-        self.save(update_fields=['is_active', 'deleted_at'])
+        self.save(update_fields=["is_active", "deleted_at"])

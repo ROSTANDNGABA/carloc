@@ -7,25 +7,56 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0003_client_user'),
+        ("api", "0003_client_user"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='paiement',
-            name='reservation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='paiements', to='api.reservation'),
+            model_name="paiement",
+            name="reservation",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="paiements",
+                to="api.reservation",
+            ),
         ),
         migrations.CreateModel(
-            name='Contrat',
+            name="Contrat",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_signature', models.DateTimeField(auto_now_add=True)),
-                ('kilometrage_depart', models.PositiveIntegerField(blank=True, null=True)),
-                ('kilometrage_retour', models.PositiveIntegerField(blank=True, null=True)),
-                ('penalites_retard', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('fichier_pdf', models.FileField(blank=True, null=True, upload_to='contrats/')),
-                ('reservation', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='contrat', to='api.reservation')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date_signature", models.DateTimeField(auto_now_add=True)),
+                (
+                    "kilometrage_depart",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
+                (
+                    "kilometrage_retour",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
+                (
+                    "penalites_retard",
+                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                ),
+                (
+                    "fichier_pdf",
+                    models.FileField(blank=True, null=True, upload_to="contrats/"),
+                ),
+                (
+                    "reservation",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="contrat",
+                        to="api.reservation",
+                    ),
+                ),
             ],
         ),
     ]

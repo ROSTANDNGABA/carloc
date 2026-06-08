@@ -8,21 +8,21 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.utils.deconstruct import deconstructible
 
-logger = logging.getLogger('carloc')
+logger = logging.getLogger("carloc")
 
 
 def _get_fernet():
     from cryptography.fernet import Fernet
 
-    key = getattr(settings, 'CARLOC_FILE_ENCRYPTION_KEY', '') or ''
+    key = getattr(settings, "CARLOC_FILE_ENCRYPTION_KEY", "") or ""
     if not key:
         if settings.DEBUG:
             key = Fernet.generate_key().decode()
             logger.warning(
-                'CARLOC_FILE_ENCRYPTION_KEY absent — clé éphémère utilisée (dev uniquement).'
+                "CARLOC_FILE_ENCRYPTION_KEY absent — clé éphémère utilisée (dev uniquement)."
             )
         else:
-            raise ValueError('CARLOC_FILE_ENCRYPTION_KEY requis en production.')
+            raise ValueError("CARLOC_FILE_ENCRYPTION_KEY requis en production.")
     if isinstance(key, str):
         key = key.encode()
     return Fernet(key)
@@ -42,7 +42,7 @@ class EncryptedMediaStorage(FileSystemStorage):
         encrypted = _get_fernet().encrypt(raw)
         return super()._save(name, ContentFile(encrypted))
 
-    def _open(self, name, mode='rb'):
+    def _open(self, name, mode="rb"):
         with super()._open(name, mode) as stored:
             decrypted = _get_fernet().decrypt(stored.read())
         return ContentFile(decrypted)
@@ -50,13 +50,13 @@ class EncryptedMediaStorage(FileSystemStorage):
 
 def get_client_document_storage():
     """S3 si configuré, sinon stockage local chiffré."""
-    bucket = os.environ.get('AWS_STORAGE_BUCKET_NAME', '').strip()
+    bucket = os.environ.get("AWS_STORAGE_BUCKET_NAME", "").strip()
     if bucket:
         from storages.backends.s3boto3 import S3Boto3Storage
 
         return S3Boto3Storage(
             bucket_name=bucket,
-            default_acl='private',
+            default_acl="private",
             file_overwrite=False,
         )
     return EncryptedMediaStorage()
@@ -64,7 +64,7 @@ def get_client_document_storage():
 
 def get_public_image_storage():
     """Cloudinary si configure, sinon stockage media Django classique."""
-    if os.environ.get('CLOUDINARY_URL', '').strip():
+    if os.environ.get("CLOUDINARY_URL", "").strip():
         from cloudinary_storage.storage import MediaCloudinaryStorage
 
         return MediaCloudinaryStorage()

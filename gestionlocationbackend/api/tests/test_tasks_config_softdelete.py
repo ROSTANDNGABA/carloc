@@ -18,18 +18,18 @@ from .base import CarLocTestCase
 class CeleryTasksTests(CarLocTestCase):
     def test_sync_all_vehicle_status_runs(self):
         result = sync_all_vehicle_status()
-        self.assertEqual(result, 'ok')
+        self.assertEqual(result, "ok")
 
 
 class ConfigurationMetierTests(CarLocTestCase):
     def setUp(self):
         super().setUp()
         ConfigurationMetier.objects.update_or_create(
-            key='PENALTY_MULTIPLICATEUR',
+            key="PENALTY_MULTIPLICATEUR",
             defaults={
-                'category': 'penalty',
-                'value_decimal': Decimal('2.0'),
-                'description': 'Test',
+                "category": "penalty",
+                "value_decimal": Decimal("2.0"),
+                "description": "Test",
             },
         )
 
@@ -45,13 +45,17 @@ class ConfigurationMetierTests(CarLocTestCase):
         )
         penalites = calculer_penalites_retard(reservation, today)
         jours_retard = (today - reservation.date_fin).days
-        expected = Decimal(jours_retard) * self.vehicule.prix_journalier * Decimal('2')
+        expected = Decimal(jours_retard) * self.vehicule.prix_journalier * Decimal("2")
         self.assertEqual(penalites, expected)
 
     def test_refund_rate_from_config(self):
         ConfigurationMetier.objects.update_or_create(
-            key='REFUND_RATE_48H',
-            defaults={'category': 'refund', 'value_decimal': Decimal('0.9'), 'description': 'Test'},
+            key="REFUND_RATE_48H",
+            defaults={
+                "category": "refund",
+                "value_decimal": Decimal("0.9"),
+                "description": "Test",
+            },
         )
         start = timezone.now().date() + timedelta(days=5)
         from api.models import Reservation
@@ -63,7 +67,7 @@ class ConfigurationMetierTests(CarLocTestCase):
             date_fin=start + timedelta(days=2),
         )
         rembourse, _, _ = calculer_remboursement_annulation(reservation)
-        self.assertEqual(rembourse, Decimal('0'))
+        self.assertEqual(rembourse, Decimal("0"))
 
 
 class SoftDeleteTests(CarLocTestCase):
@@ -71,15 +75,17 @@ class SoftDeleteTests(CarLocTestCase):
         client_id = self.client_profile.id
         self.client_profile.delete()
         self.assertFalse(Client.objects.filter(pk=client_id).exists())
-        self.assertTrue(Client.all_objects.filter(pk=client_id, is_active=False).exists())
+        self.assertTrue(
+            Client.all_objects.filter(pk=client_id, is_active=False).exists()
+        )
 
     def test_vehicule_soft_delete(self):
         vehicule = Vehicule.objects.create(
-            immatriculation='ZZ-999-ZZ',
-            marque='Test',
-            modele='Soft',
-            categorie='Citadine',
-            prix_journalier=Decimal('10000'),
+            immatriculation="ZZ-999-ZZ",
+            marque="Test",
+            modele="Soft",
+            categorie="Citadine",
+            prix_journalier=Decimal("10000"),
         )
         vehicule_id = vehicule.id
         vehicule.delete()
