@@ -179,15 +179,23 @@ export class LoginPageComponent {
 
   private loginErrorMessage(err: unknown): string {
     const http = err as { status?: number; statusText?: string };
+    
+    // Pas de connexion au serveur
     if (http.status === 0 || http.status === undefined) {
-      return 'Serveur injoignable. Démarrez le backend (python manage.py runserver) puis réessayez.';
+      return 'Impossible de se connecter. Veuillez vérifier votre connexion internet et réessayer.';
     }
+    
+    // Trop de tentatives
     if (http.status === 429) {
-      return 'Trop de tentatives. Attendez 5 minutes ou redémarrez le serveur API en développement.';
+      return 'Trop de tentatives de connexion. Veuillez patienter quelques instants avant de réessayer.';
     }
+    
+    // Identifiants invalides
     if (http.status === 401) {
-      return 'Connexion refusée. Veuillez vérifier vos informations de connexion et réessayer.';
+      return 'Email ou mot de passe incorrect. Veuillez vérifier vos informations.';
     }
-    return extractApiError(err) || 'Connexion impossible. Veuillez vérifier vos informations de connexion et réessayer.';
+    
+    // Autres erreurs (extraites via extractApiError qui filtre les détails techniques)
+    return extractApiError(err) || 'Impossible de se connecter. Veuillez réessayer.';
   }
 }

@@ -1,0 +1,165 @@
+name: Tests & Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: carloc_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        cd gestionlocationbackend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-django pytest-cov
+    
+    - name: Run migrations
+      env:
+        DEBUG: 'True'
+        SECRET_KEY: 'test-secret-key-for-ci-only'
+        DB_NAME: carloc_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
+        REDIS_URL: redis://localhost:6379/0
+        CELERY_TASK_ALWAYS_EAGER: 'True'
+      run: |
+        cd gestionlocationbackend
+        python manage.py migrate --noinput
+    
+    - name: Run tests with coverage
+      env:
+        DEBUG: 'True'
+        SECRET_KEY: 'test-secret-key-for-ci-only'
+        DB_NAME: carloc_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
+        REDIS_URL: redis://localhost:6379/0
+        CELERY_TASK_ALWAYS_EAGER: 'True'
+      run: |
+        cd gestionlocationbackend
+        pytest --cov=api --cov-report=xml --cov-report=term -v
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./gestionlocationbackend/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Check Django deployment
+      env:
+        DEBUG: 'False'
+        SECRET_KEY: 'test-secret-key-for-deployment-check'
+        DB_NAME: carloc_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
+        ALLOWED_HOSTS: 'localhost,127.0.0.1'
+      run: |
+        cd gestionlocationbackend
+        python manage.py check --deploy --fail-level WARNING
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort mypy
+    
+    - name: Run Black
+      run: |
+        cd gestionlocationbackend
+        black --check api/
+    
+    - name: Run isort
+      run: |
+        cd gestionlocationbackend
+        isort --check-only api/
+    
+    - name: Run flake8
+      run: |
+        cd gestionlocationbackend
+        flake8 api/ --max-line-length=120 --extend-ignore=E203,W503
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install safety
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+    
+    - name: Check dependencies for vulnerabilities
+      run: |
+        cd gestionlocationbackend
+        pip install -r requirements.txt
+        safety check --json || true
+    
+    - name: Run Bandit security linter
+      run: |
+        cd gestionlocationbackend
+        bandit -r api/ -ll -f json -o bandit-report.json || true
+        cat bandit-report.json

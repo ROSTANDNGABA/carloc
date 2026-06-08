@@ -13,42 +13,87 @@ export function unwrapPaginated<T>(data: PaginatedResponse<T> | T[]): T[] {
   return data?.results ?? [];
 }
 
+/**
+ * Extrait un message d'erreur convivial pour l'utilisateur.
+ * ⚠️ SÉCURITÉ : Ne jamais exposer de détails techniques (codes, stack traces, etc.)
+ */
 export function extractApiError(err: unknown): string {
-  const e = err as { error?: unknown };
-  if (!e?.error) {
-    return 'Erreur de communication avec le serveur.';
+  const e = err as { status?: number; error?: unknown; statusText?: string };
+
+  // Erreurs réseau (pas de connexion au serveur)
+  if (e.status === 0 || e.status === undefined) {
+    return 'Impossible de se connecter au serveur. Veuillez vérifier votre connexion internet.';
   }
+
+  // Rate limiting (trop de tentatives)
+  if (e.status === 429) {
+    return 'Trop de tentatives. Veuillez patienter quelques instants avant de réessayer.';
+  }
+
+  // Erreurs d'authentification
+  if (e.status === 401 || e.status === 403) {
+    return 'Accès refusé. Veuillez vous reconnecter.';
+  }
+
+  // Ressource non trouvée
+  if (e.status === 404) {
+    return 'La ressource demandée est introuvable.';
+  }
+
+  // Erreurs serveur (500, 502, 503, 504)
+  if (e.status && e.status >= 500) {
+    return 'Le service est temporairement indisponible. Veuillez réessayer dans quelques instants.';
+  }
+
+  // Erreurs métier structurées (avec message convivial)
   if (typeof e.error === 'object' && e.error !== null) {
     const structured = e.error as { message?: string; code?: string; details?: unknown };
-    if (structured.message) {
-      const code = structured.code ? `[${structured.code}] ` : '';
-      const details = structured.details
-        ? ` — ${stringifyApiError(structured.details)}`
-        : '';
-      return `${code}${structured.message}${details}`.trim();
+    
+    // Si le backend a déjà envoyé un message convivial, l'utiliser
+    if (structured.message && isUserFriendlyMessage(structured.message)) {
+      return structured.message;
+    }
+
+    // Sinon, extraire les détails de validation
+    if (structured.details) {
+      const validationMessage = stringifyValidationErrors(structured.details);
+      if (validationMessage) {
+        return validationMessage;
+      }
     }
   }
-  if (typeof e.error === 'string') {
+
+  // Erreur texte simple du backend
+  if (typeof e.error === 'string' && isUserFriendlyMessage(e.error)) {
     return e.error;
   }
 
-  const labelMap: Record<string, string> = {
-    email: 'Email',
-    num_permis: 'Permis',
-    password: 'Mot de passe',
-    password_confirm: 'Confirmation',
-    telephone: 'Telephone',
-    nom: 'Nom',
-    prenom: 'Prenom',
-    vehicule: 'Véhicule',
-    date_debut: 'Date de début',
-    date_fin: 'Date de fin',
-    client: 'Client',
-    non_field_errors: 'Erreur',
-    detail: 'Erreur',
-  };
+  // Message par défaut (ne jamais exposer de détails techniques)
+  return 'Une erreur est survenue. Veuillez réessayer.';
+}
 
-  return stringifyApiError(e.error) || 'Requete invalide.';
+/**
+ * Vérifie si un message est convivial pour l'utilisateur final
+ * (pas de détails techniques, codes erreur, stack traces, etc.)
+ */
+function isUserFriendlyMessage(message: string): boolean {
+  const technicalPatterns = [
+    /python/i,
+    /manage\.py/i,
+    /runserver/i,
+    /backend/i,
+    /500/,
+    /404/,
+    /\[.*\]/,  // codes entre crochets [ERR_001]
+    /stack trace/i,
+    /exception/i,
+    /traceback/i,
+    /django/i,
+    /postgres/i,
+    /sql/i,
+  ];
+
+  return !technicalPatterns.some(pattern => pattern.test(message));
 }
 
 const RESERVATION_ERROR_HINTS: Record<string, string> = {
@@ -74,17 +119,25 @@ export function extractReservationError(err: unknown): { message: string; profil
   return { message: base };
 }
 
-function stringifyApiError(value: unknown): string {
+/**
+ * Transforme les erreurs de validation en message convivial
+ */
+function stringifyValidationErrors(value: unknown): string {
   const labelMap: Record<string, string> = {
     email: 'Email',
-    num_permis: 'Permis',
+    num_permis: 'Numéro de permis',
     password: 'Mot de passe',
-    password_confirm: 'Confirmation',
-    telephone: 'Telephone',
+    password_confirm: 'Confirmation du mot de passe',
+    telephone: 'Téléphone',
     nom: 'Nom',
-    prenom: 'Prenom',
-    non_field_errors: 'Erreur',
-    detail: 'Erreur',
+    prenom: 'Prénom',
+    vehicule: 'Véhicule',
+    date_debut: 'Date de début',
+    date_fin: 'Date de fin',
+    client: 'Client',
+    montant_paye: 'Montant',
+    non_field_errors: '',
+    detail: '',
   };
 
   const stringify = (val: unknown): string => {
@@ -96,17 +149,31 @@ function stringifyApiError(value: unknown): string {
       return val.map(stringify).filter(Boolean).join(', ');
     }
     if (typeof val === 'object') {
-      return Object.entries(val as Record<string, unknown>)
+      const errors = Object.entries(val as Record<string, unknown>)
         .map(([key, v]) => {
           const label = labelMap[key] ?? key;
           const message = stringify(v);
-          return message ? `${label}: ${message}` : '';
+          if (!message) return '';
+          
+          // Si c'est un champ technique (non_field_errors, detail), retourner juste le message
+          if (!labelMap[key]) {
+            return message;
+          }
+          
+          return `${label} : ${message}`;
         })
-        .filter(Boolean)
-        .join(' | ');
+        .filter(Boolean);
+
+      return errors.join('. ');
     }
     return String(val);
   };
 
-  return stringify(value);
+  const result = stringify(value);
+  return result ? result + '.' : '';
+}
+
+function stringifyApiError(value: unknown): string {
+  // Cette fonction est deprecated, utiliser stringifyValidationErrors à la place
+  return stringifyValidationErrors(value);
 }
