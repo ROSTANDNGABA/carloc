@@ -117,7 +117,7 @@ class CompleteFeaturesTests(CarLocTestCase):
         fin = debut + timedelta(days=3)
         with self.assertRaises(ReservationNotAllowedError) as ctx:
             valider_eligibilite_reservation(self.client_profile, debut, fin)
-        self.assertEqual(ctx.exception.code, 'missing_permis_document')
+        self.assertEqual(ctx.exception.code, 'missing_identity_document')
 
     def test_deletion_rules_unit(self):
         debut = date.today()
