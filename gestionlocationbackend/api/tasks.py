@@ -71,6 +71,50 @@ def send_paiement_received_email(self, paiement_id):
         raise self.retry(exc=exc, countdown=2 ** self.request.retries)
 
 
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_whatsapp_paiement_received(self, paiement_id):
+    from .models import Paiement, Facture
+    from .whatsapp_utils import envoyer_message_whatsapp
+
+    try:
+        paiement = Paiement.objects.get(id=paiement_id)
+        reservation = paiement.reservation
+        client = reservation.client
+        
+        if not client.telephone:
+            logger.info("Pas de téléphone pour le client %s, annulation du WhatsApp", client.id)
+            return None
+
+        lines = [
+            f"Bonjour {client.prenom or ''} {client.nom or 'cher client'},",
+            "",
+            "Nous avons bien recu votre paiement CarLoc.",
+            "",
+            f"Reservation : #{reservation.id}",
+            f"Montant recu : {paiement.montant_paye}",
+            f"Mode : {paiement.get_mode_paiement_display()}",
+            f"Solde restant : {reservation.solde_restant}",
+        ]
+        
+        facture = Facture.objects.filter(reservation=reservation).exclude(fichier_pdf='').order_by('-date_emission').first()
+        if facture and facture.fichier_pdf:
+            lines.append("")
+            lines.append(f"Lien vers la facture/recu : {facture.fichier_pdf.url}")
+
+        lines.extend(["", "Merci pour votre confiance.", "L'equipe CarLoc"])
+
+        success = envoyer_message_whatsapp(client.telephone, "\n".join(lines))
+        if success:
+            return f'WhatsApp Paiement {paiement_id} envoyé'
+        return f'Échec de l\'envoi WhatsApp pour Paiement {paiement_id}'
+        
+    except Paiement.DoesNotExist:
+        return None
+    except Exception as exc:
+        logger.error("Erreur tâche WhatsApp paiement %s: %s", paiement_id, exc)
+        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+
+
 @shared_task
 def sync_all_vehicle_status():
     from .models import Vehicule

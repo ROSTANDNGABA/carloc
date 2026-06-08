@@ -31,17 +31,17 @@ def valider_eligibilite_reservation(client, date_debut, date_fin, exclude_reserv
         )
 
     if _require_client_documents():
-        if not client.permis_conduire:
+        if not (client.permis_conduire or client.num_permis):
             raise ReservationNotAllowedError(
-                'Permis de conduire requis pour réserver.',
+                'Numéro de permis requis pour réserver.',
                 code='missing_permis_document',
-                details={'field': 'permis_conduire'},
+                details={'field': 'num_permis'},
             )
-        if not client.piece_identite:
+        if not (client.piece_identite or client.num_cni):
             raise ReservationNotAllowedError(
-                "Pièce d'identité requise pour réserver.",
+                "Numéro CNI requis pour réserver.",
                 code='missing_identity_document',
-                details={'field': 'piece_identite'},
+                details={'field': 'num_cni'},
             )
 
     today = timezone.now().date()

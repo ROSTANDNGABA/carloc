@@ -2,8 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AdminService, Contrat } from '@app/core/services/admin.service';
+import { ClientService } from '@app/core/services/client.service';
 import { ReservationService } from '@app/core/services/reservation.service';
+import { WhatsAppService } from '@app/core/services/whatsapp.service';
 import { extractApiError } from '@app/core/utils/api.util';
+import { Client } from '@app/models/client.model';
 import { Reservation } from '@app/models/reservation.model';
 import { money, shortDate, statusTone } from '@app/shared/formatters';
 
@@ -66,6 +69,16 @@ import { money, shortDate, statusTone } from '@app/shared/formatters';
                     <td class="text-end">
                       <button class="btn btn-icon" type="button" (click)="generatePdf(contrat)" aria-label="Générer PDF" title="Télécharger le contrat">
                         <i class="bi bi-filetype-pdf" aria-hidden="true"></i>
+                      </button>
+                      <button
+                        class="btn btn-icon"
+                        type="button"
+                        (click)="envoyerWhatsApp(contrat)"
+                        aria-label="Envoyer par WhatsApp"
+                        title="Envoyer facture sur WhatsApp"
+                        style="color: #25D366;"
+                      >
+                        <i class="bi bi-whatsapp" aria-hidden="true"></i>
                       </button>
                       @if (!contrat.kilometrage_retour) {
                         <button class="btn btn-icon" type="button" (click)="selectClose(contrat)" aria-label="Clôturer" title="Clôturer le contrat">
@@ -182,9 +195,12 @@ import { money, shortDate, statusTone } from '@app/shared/formatters';
 export class AdminContractsPageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly admin = inject(AdminService);
+  private readonly clientsService = inject(ClientService);
   private readonly reservationsService = inject(ReservationService);
+  private readonly whatsapp = inject(WhatsAppService);
 
   readonly contrats = signal<Contrat[]>([]);
+  readonly clients = signal<Client[]>([]);
   readonly reservations = signal<Reservation[]>([]);
   readonly closingContract = signal<Contrat | null>(null);
   readonly loading = signal(true);
@@ -310,10 +326,34 @@ export class AdminContractsPageComponent {
       });
   }
 
+  envoyerWhatsApp(contrat: Contrat): void {
+    const reservation = this.resolveReservation(contrat);
+    const client = reservation ? this.findClientForReservation(reservation) : null;
+
+    if (!reservation || !client?.telephone) {
+      this.error.set('Numero WhatsApp du client introuvable pour ce contrat.');
+      return;
+    }
+
+    this.whatsapp.envoyerFacture({
+      telephone: client.telephone,
+      prenomNom: this.clientFullName(client),
+      numeroFacture: `Contrat #${contrat.id}`,
+      vehicule: this.vehicleLabel(reservation),
+      montantTotal: this.moneyFmt(contrat.montant_location ?? reservation.montant_total ?? 0),
+      montantPaye: this.moneyFmt(reservation.total_paye ?? 0),
+      soldeRestant: this.moneyFmt(contrat.solde_reservation ?? reservation.solde_restant ?? 0),
+    });
+  }
+
   private load(): void {
     this.loading.set(true);
     this.admin.getContrats().subscribe({
       next: contrats => this.contrats.set(contrats),
+      error: (err: unknown) => this.error.set(extractApiError(err)),
+    });
+    this.clientsService.getAllClients().subscribe({
+      next: clients => this.clients.set(clients),
       error: (err: unknown) => this.error.set(extractApiError(err)),
     });
     this.reservationsService
@@ -328,5 +368,23 @@ export class AdminContractsPageComponent {
   private today(): string {
     return new Date().toISOString().slice(0, 10);
   }
-}
 
+  private resolveReservation(contrat: Contrat): Reservation | undefined {
+    const details = contrat.reservation_details as Reservation | undefined;
+    if (details?.id) {
+      return details;
+    }
+    return this.reservations().find(reservation => reservation.id === contrat.reservation);
+  }
+
+  private findClientForReservation(reservation: Reservation): Client | null {
+    if (typeof reservation.client === 'object') {
+      return reservation.client;
+    }
+    return this.clients().find(client => client.id === reservation.client) ?? null;
+  }
+
+  private clientFullName(client: Client): string {
+    return `${client.prenom ?? ''} ${client.nom ?? ''}`.trim() || 'Client';
+  }
+}

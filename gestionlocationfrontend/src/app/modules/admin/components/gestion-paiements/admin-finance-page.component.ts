@@ -2,9 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, switchMap } from 'rxjs';
 import { AdminService, Paiement } from '@app/core/services/admin.service';
+import { ClientService } from '@app/core/services/client.service';
 import { FactureService } from '@app/core/services/facture.service';
 import { ReservationService } from '@app/core/services/reservation.service';
+import { WhatsAppService } from '@app/core/services/whatsapp.service';
 import { extractApiError } from '@app/core/utils/api.util';
+import { Client } from '@app/models/client.model';
 import { Facture } from '@app/models/facture.model';
 import { Reservation } from '@app/models/reservation.model';
 import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatters';
@@ -50,11 +53,12 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
                   <th>Montant</th>
                   <th>Mode</th>
                   <th>Date</th>
+                  <th class="text-end">Action</th>
                 </tr>
               </thead>
               <tbody>
                 @if (loading()) {
-                  <tr><td colspan="5" class="muted-cell">Chargement...</td></tr>
+                  <tr><td colspan="6" class="muted-cell">Chargement...</td></tr>
                 } @else {
                   @for (payment of paiements(); track payment.id) {
                     <tr>
@@ -63,9 +67,21 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
                       <td><strong>{{ moneyFmt(payment.montant_paye) }}</strong></td>
                       <td>{{ label(payment.mode_paiement) }}</td>
                       <td>{{ dateFmt(payment.date_paiement) }}</td>
+                      <td class="text-end">
+                        <button
+                          class="btn btn-icon"
+                          type="button"
+                          (click)="envoyerPaiementWhatsApp(payment)"
+                          aria-label="Envoyer le paiement sur WhatsApp"
+                          title="Envoyer le reçu par WhatsApp"
+                          style="color: #25D366;"
+                        >
+                          <i class="bi bi-whatsapp" aria-hidden="true"></i>
+                        </button>
+                      </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="5" class="muted-cell">Aucun paiement.</td></tr>
+                    <tr><td colspan="6" class="muted-cell">Aucun paiement.</td></tr>
                   }
                 }
               </tbody>
@@ -88,7 +104,7 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
                   <th>Date</th>
                   <th>Montant</th>
                   <th>Statut</th>
-                  <th class="text-end">PDF</th>
+                  <th class="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,6 +117,16 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
                     <td>{{ moneyFmt(facture.montant_total) }}</td>
                     <td><span [class]="'status-pill ' + tone(facture.statut)">{{ label(facture.statut) }}</span></td>
                     <td class="text-end">
+                      <button
+                        class="btn btn-icon"
+                        type="button"
+                        (click)="envoyerFactureWhatsApp(facture)"
+                        aria-label="Envoyer la facture sur WhatsApp"
+                        title="Envoyer par WhatsApp"
+                        style="color: #25D366;"
+                      >
+                        <i class="bi bi-whatsapp" aria-hidden="true"></i>
+                      </button>
                       <button class="btn btn-icon" type="button" (click)="download(facture)" [disabled]="workingPdf() === facture.id">
                         <i class="bi bi-filetype-pdf" aria-hidden="true"></i>
                       </button>
@@ -180,12 +206,15 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
 export class AdminFinancePageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly admin = inject(AdminService);
+  private readonly clientsService = inject(ClientService);
   private readonly reservationsService = inject(ReservationService);
   private readonly facturesService = inject(FactureService);
+  private readonly whatsapp = inject(WhatsAppService);
 
   readonly paiements = signal<Paiement[]>([]);
   readonly reservations = signal<Reservation[]>([]);
   readonly factures = signal<Facture[]>([]);
+  readonly clients = signal<Client[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly workingPdf = signal<number | null>(null);
@@ -272,6 +301,50 @@ export class AdminFinancePageComponent {
     });
   }
 
+  envoyerPaiementWhatsApp(payment: Paiement): void {
+    const reservation = this.findReservation(payment.reservation);
+    const client = reservation ? this.findClientForReservation(reservation) : null;
+    if (!reservation || !client?.telephone) {
+      this.error.set('Numero WhatsApp du client introuvable pour ce paiement.');
+      return;
+    }
+
+    // Cherche une facture pour cette réservation pour obtenir un lien PDF
+    const facture = this.factures().find(f => f.reservation === payment.reservation && f.fichier_pdf_url);
+    const pdfUrl = facture?.fichier_pdf_url?.startsWith('http') ? facture.fichier_pdf_url : undefined;
+
+    this.whatsapp.envoyerConfirmationPaiement({
+      telephone: client.telephone,
+      prenomNom: this.clientFullName(client),
+      reservationId: payment.reservation,
+      montantPaye: this.moneyFmt(payment.montant_paye),
+      modePaiement: this.label(payment.mode_paiement),
+      soldeRestant: this.moneyFmt(payment.reservation_solde_restant ?? reservation.solde_restant ?? 0),
+      lienPdf: pdfUrl,
+    });
+  }
+
+  envoyerFactureWhatsApp(facture: Facture): void {
+    const reservation = this.findReservation(facture.reservation);
+    const client = reservation ? this.findClientForReservation(reservation) : null;
+    if (!reservation || !client?.telephone) {
+      this.error.set('Numero WhatsApp du client introuvable pour cette facture.');
+      return;
+    }
+
+    const pdfUrl = facture.fichier_pdf_url?.startsWith('http') ? facture.fichier_pdf_url : undefined;
+    this.whatsapp.envoyerFacture({
+      telephone: client.telephone,
+      prenomNom: this.clientFullName(client),
+      numeroFacture: facture.numero,
+      vehicule: facture.vehicule_info ?? this.vehicleLabel(reservation),
+      montantTotal: this.moneyFmt(facture.montant_total),
+      montantPaye: this.moneyFmt(facture.reservation_total_paye ?? reservation.total_paye ?? 0),
+      soldeRestant: this.moneyFmt(reservation.solde_restant ?? 0),
+      lienPdf: pdfUrl,
+    });
+  }
+
   private load(): void {
     this.loading.set(true);
     this.error.set('');
@@ -283,6 +356,10 @@ export class AdminFinancePageComponent {
       next: reservations => this.reservations.set(reservations),
       error: (err: unknown) => this.error.set(extractApiError(err)),
     });
+    this.clientsService.getAllClients().subscribe({
+      next: clients => this.clients.set(clients),
+      error: (err: unknown) => this.error.set(extractApiError(err)),
+    });
     this.facturesService
       .getFactures()
       .pipe(finalize(() => this.loading.set(false)))
@@ -291,5 +368,23 @@ export class AdminFinancePageComponent {
         error: (err: unknown) => this.error.set(extractApiError(err)),
       });
   }
-}
 
+  private findReservation(id: number): Reservation | undefined {
+    return this.reservations().find(reservation => reservation.id === id);
+  }
+
+  private findClientForReservation(reservation: Reservation): Client | null {
+    if (typeof reservation.client === 'object') {
+      return reservation.client;
+    }
+    return this.clients().find(client => client.id === reservation.client) ?? null;
+  }
+
+  private clientFullName(client: Client): string {
+    return `${client.prenom ?? ''} ${client.nom ?? ''}`.trim() || 'Client';
+  }
+
+  private vehicleLabel(reservation: Reservation): string {
+    return `${reservation.marque_vehicule ?? ''} ${reservation.modele_vehicule ?? ''}`.trim() || 'Vehicule';
+  }
+}

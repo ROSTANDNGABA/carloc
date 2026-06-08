@@ -8,9 +8,7 @@ from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 
 from .models import Client, Contrat, Facture, Maintenance, NotificationLog, Paiement, Reservation, Vehicule
 from .validators import (
-    validate_cni_format,
     validate_document_file,
-    validate_permis_format,
     validate_telephone_format,
 )
 from .reservation_rules import valider_eligibilite_reservation
@@ -256,16 +254,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def validate_telephone(self, value):
         validate_telephone_format(value)
-        return value
-
-    def validate_num_permis(self, value):
-        if value:
-            validate_permis_format(value.upper())
-        return value
-
-    def validate_num_cni(self, value):
-        if value:
-            validate_cni_format(value.upper())
         return value
 
     def validate_permis_conduire(self, value):

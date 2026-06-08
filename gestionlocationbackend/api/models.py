@@ -11,8 +11,6 @@ from .storages import get_client_document_storage, get_public_image_storage
 from .utils import calculer_montant_location, nb_jours_location
 from .validators import (
     validate_document_file,
-    validate_permis_format,
-    validate_cni_format,
     validate_telephone_format
 )
 
@@ -67,15 +65,13 @@ class Client(SoftDeleteMixin, models.Model):
         max_length=50,
         unique=True,
         null=True,
-        blank=True,
-        validators=[validate_permis_format]
+        blank=True
     )
     num_cni = models.CharField(
         max_length=50,
         unique=True,
         null=True,
-        blank=True,
-        validators=[validate_cni_format]
+        blank=True
     )
     photo_profil = models.ImageField(
         upload_to='clients/photos/',

@@ -385,6 +385,11 @@ PUBLIC_BACKEND_URL = os.environ.get(
     f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'carloc.onrender.com')}",
 ).rstrip('/')
 
+# --- Twilio WhatsApp ---
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '').strip()
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '').strip()
+TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER', '').strip()
+
 # --- Interface Django Admin (Jazzmin) — thème CarLoc ---
 JAZZMIN_SETTINGS = {
     'site_title': 'CarLoc Admin',

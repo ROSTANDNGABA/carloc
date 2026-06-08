@@ -4,6 +4,7 @@ import { finalize, switchMap } from 'rxjs';
 import { ClientService } from '@app/core/services/client.service';
 import { ReservationService, ReservationCancellationResponse } from '@app/core/services/reservation.service';
 import { VehiculeService } from '@app/core/services/vehicule.service';
+import { WhatsAppService } from '@app/core/services/whatsapp.service';
 import { reservationDatesValidator } from '@app/core/validators/reservation.validators';
 import { extractApiError, extractReservationError } from '@app/core/utils/api.util';
 import { Client } from '@app/models/client.model';
@@ -75,6 +76,16 @@ import { canCancelReservation, clientName, money, reservationStatusLabel, shortD
                       </span>
                     </td>
                     <td class="text-end">
+                      <button
+                        class="btn btn-icon"
+                        type="button"
+                        (click)="envoyerWhatsApp(reservation)"
+                        aria-label="Envoyer sur WhatsApp"
+                        title="Envoyer confirmation WhatsApp"
+                        style="color: #25D366;"
+                      >
+                        <i class="bi bi-whatsapp" aria-hidden="true"></i>
+                      </button>
                       <button
                         class="btn btn-icon danger"
                         type="button"
@@ -194,6 +205,7 @@ export class AdminReservationsPageComponent {
   private readonly reservationsService = inject(ReservationService);
   private readonly clientsService = inject(ClientService);
   private readonly vehiclesService = inject(VehiculeService);
+  private readonly whatsapp = inject(WhatsAppService);
 
   readonly reservations = signal<Reservation[]>([]);
   readonly totalCount = signal(0);
@@ -318,6 +330,28 @@ export class AdminReservationsPageComponent {
     this.vehiclesService.verifierDisponibilite(vehiculeId, values.date_debut, values.date_fin).subscribe({
       next: r => this.availabilityHint.set(r.message),
       error: () => this.availabilityHint.set(''),
+    });
+  }
+
+  envoyerWhatsApp(reservation: Reservation): void {
+    // Récupérer le téléphone depuis la liste des clients chargés
+    const clientId = typeof reservation.client === 'number' ? reservation.client : reservation.client?.id;
+    const client = this.clients().find(c => c.id === clientId);
+    const telephone = client?.telephone;
+
+    if (!telephone) {
+      this.error.set('Numéro de téléphone du client introuvable.');
+      return;
+    }
+
+    this.whatsapp.envoyerConfirmationReservation({
+      telephone,
+      prenomNom: `${reservation.prenom_client ?? ''} ${reservation.nom_client ?? ''}`.trim(),
+      reservationId: reservation.id!,
+      vehicule: `${reservation.marque_vehicule ?? ''} ${reservation.modele_vehicule ?? ''} (${reservation.immatriculation ?? ''})`.trim(),
+      dateDebut: this.dateFmt(reservation.date_debut),
+      dateFin: this.dateFmt(reservation.date_fin),
+      montant: this.moneyFmt(reservation.montant_du ?? reservation.montant_total),
     });
   }
 

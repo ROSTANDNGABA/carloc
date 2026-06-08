@@ -1,8 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-/** Aligné sur api/validators.py (permis français). */
-export const PERMIS_PATTERN = /^[A-Z]{2}\d{7}$/;
-
 /** Téléphone international souple : chiffres et signes usuels, sans restriction pays. */
 export const TELEPHONE_PATTERN = /^[+()\d\s.-]{3,30}$/;
 
@@ -11,13 +8,7 @@ export function normalizePhone(value: string): string {
 }
 
 export function permisValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const raw = (control.value as string | null)?.trim().toUpperCase();
-    if (!raw) {
-      return null;
-    }
-    return PERMIS_PATTERN.test(raw) ? null : { permisFormat: true };
-  };
+  return (_control: AbstractControl): ValidationErrors | null => null;
 }
 
 export function telephoneValidator(): ValidatorFn {
@@ -31,12 +22,5 @@ export function telephoneValidator(): ValidatorFn {
 }
 
 export function cniValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const raw = (control.value as string | null)?.trim();
-    if (!raw) {
-      return null;
-    }
-    const len = raw.length;
-    return len >= 5 && len <= 20 ? null : { cniFormat: true };
-  };
+  return (_control: AbstractControl): ValidationErrors | null => null;
 }
