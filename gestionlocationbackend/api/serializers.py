@@ -527,9 +527,10 @@ class ReservationSerializer(serializers.ModelSerializer):
                 )
 
             exclude_pk = instance.pk if instance else None
-            # lock=True pour verrouiller le véhicule et éviter les réservations concurrentes
+            # Pas de lock=True ici car nous ne sommes pas dans une transaction atomique.
+            # Le vrai verrouillage (lock=True) sera fait dans create() et update().
             if not vehicule_disponible_pour_periode(
-                vehicule, debut, fin, exclude_reservation_pk=exclude_pk, lock=True
+                vehicule, debut, fin, exclude_reservation_pk=exclude_pk, lock=False
             ):
                 raise serializers.ValidationError(
                     {"vehicule": "Le véhicule est déjà réservé sur cette période."}
@@ -563,6 +564,17 @@ class ReservationSerializer(serializers.ModelSerializer):
         ):
             validated_data["client"] = request.user.client_profile
 
+        vehicule = validated_data.get("vehicule")
+        debut = validated_data.get("date_debut")
+        fin = validated_data.get("date_fin")
+        if vehicule and debut and fin:
+            if not vehicule_disponible_pour_periode(vehicule, debut, fin, lock=True):
+                raise serializers.ValidationError(
+                    {
+                        "vehicule": "Le véhicule a été réservé par un autre utilisateur entre temps."
+                    }
+                )
+
         reservation = Reservation.objects.create(**validated_data)
         apres_creation_reservation(reservation)
         return reservation
@@ -573,6 +585,19 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Impossible de modifier une réservation annulée."
             )
+
+        vehicule = validated_data.get("vehicule", instance.vehicule)
+        debut = validated_data.get("date_debut", instance.date_debut)
+        fin = validated_data.get("date_fin", instance.date_fin)
+        if vehicule and debut and fin:
+            if not vehicule_disponible_pour_periode(
+                vehicule, debut, fin, exclude_reservation_pk=instance.pk, lock=True
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "vehicule": "Le véhicule a été réservé par un autre utilisateur entre temps."
+                    }
+                )
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
