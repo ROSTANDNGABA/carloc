@@ -91,6 +91,16 @@ function isUserFriendlyMessage(message: string): boolean {
     /django/i,
     /postgres/i,
     /sql/i,
+    /database/i,
+    /line \d+/i,
+    /file ".*"/i,
+    /integrityerror/i,
+    /validationerror/i,
+    /typeerror/i,
+    /valueerror/i,
+    /keyerror/i,
+    /syntaxerror/i,
+    /internal server error/i,
   ];
 
   return !technicalPatterns.some(pattern => pattern.test(message));
@@ -143,7 +153,8 @@ function stringifyValidationErrors(value: unknown): string {
   const stringify = (val: unknown): string => {
     if (val == null) return '';
     if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
-      return String(val);
+      const msg = String(val);
+      return isUserFriendlyMessage(msg) ? msg : 'Erreur de validation.';
     }
     if (Array.isArray(val)) {
       return val.map(stringify).filter(Boolean).join(', ');
@@ -151,13 +162,17 @@ function stringifyValidationErrors(value: unknown): string {
     if (typeof val === 'object') {
       const errors = Object.entries(val as Record<string, unknown>)
         .map(([key, v]) => {
-          const label = labelMap[key] ?? key;
           const message = stringify(v);
           if (!message) return '';
           
-          // Si c'est un champ technique (non_field_errors, detail), retourner juste le message
-          if (!labelMap[key]) {
+          if (key === 'non_field_errors' || key === 'detail') {
             return message;
+          }
+          
+          const label = labelMap[key];
+          if (!label) {
+            // Champ technique inconnu ou non listé, on utilise un terme générique
+            return `Champ incorrect : ${message}`;
           }
           
           return `${label} : ${message}`;
