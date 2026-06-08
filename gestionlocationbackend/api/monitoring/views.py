@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from api.permissions import IsAdminUser
 
@@ -18,6 +19,25 @@ class HealthCheckView(APIView):
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        summary="Health Check",
+        description="Vérifie l'état de santé de l'application (BDD, services)",
+        responses={
+            200: OpenApiResponse(
+                description="Service en bonne santé",
+                response={
+                    'type': 'object',
+                    'properties': {
+                        'status': {'type': 'string', 'enum': ['ok', 'degraded']},
+                        'database': {'type': 'string'},
+                        'debug': {'type': 'boolean'}
+                    }
+                }
+            ),
+            503: OpenApiResponse(description="Service dégradé")
+        },
+        tags=['Monitoring']
+    )
     def get(self, request):
         db_ok = True
         db_error = ''
@@ -46,6 +66,19 @@ class PrometheusMetricsView(APIView):
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        summary="Métriques Prometheus",
+        description="Expose les métriques de l'application au format Prometheus",
+        responses={
+            200: OpenApiResponse(
+                description="Métriques au format Prometheus",
+                response={'type': 'string'}
+            ),
+            401: OpenApiResponse(description="Token invalide"),
+            404: OpenApiResponse(description="Prometheus désactivé")
+        },
+        tags=['Monitoring']
+    )
     def get(self, request):
         if not getattr(settings, 'PROMETHEUS_ENABLED', False):
             return Response(
@@ -69,7 +102,20 @@ class SentryDebugView(APIView):
     """Envoie une exception de test vers Sentry (admin uniquement)."""
 
     permission_classes = [IsAdminUser]
+    serializer_class = None  # Pas de serializer pour cette vue de test
 
+    @extend_schema(
+        summary="Test Sentry",
+        description="Envoie une exception de test à Sentry pour vérifier la configuration",
+        responses={
+            200: OpenApiResponse(
+                description="Exception envoyée à Sentry",
+                response={'type': 'object', 'properties': {'detail': {'type': 'string'}}}
+            ),
+            400: OpenApiResponse(description="Sentry non configuré")
+        },
+        tags=['Monitoring']
+    )
     def post(self, request):
         if not getattr(settings, 'SENTRY_DSN', ''):
             return Response(

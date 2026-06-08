@@ -62,9 +62,18 @@ class CarLocTokenObtainPairView(TokenObtainPairView):
     serializer_class = CarLocTokenObtainPairSerializer
 
     def get_throttles(self):
+        """
+        Double protection rate limiting:
+        1. LoginThrottle: 5 tentatives / 5 minutes
+        2. LoginHourlyThrottle: 20 tentatives / heure
+        
+        Désactivable en mode test via CARLOC_DISABLE_LOGIN_THROTTLE=True
+        """
         if getattr(settings, 'CARLOC_DISABLE_LOGIN_THROTTLE', False):
             return []
-        return [LoginThrottle()]
+        
+        from .throttles import LoginThrottle, LoginHourlyThrottle
+        return [LoginThrottle(), LoginHourlyThrottle()]
 
 
 class GestionnaireViewSet(viewsets.ModelViewSet):

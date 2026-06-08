@@ -215,21 +215,22 @@ def notifier_reservation_creee(reservation):
         f'Montant estime : {amount} FCFA\n\n'
         f"Cordialement,\nL'equipe CarLoc"
     )
-    envoyer_notification(
-        'reservation_creee',
-        client.email,
-        sujet,
-        corps,
-        reservation,
-        params={
-            'to_email': client.email,
-            'to_name': f'{client.prenom} {client.nom}',
-            'reservation_id': reservation.id,
-            'vehicle': vehicle,
-            'period': period,
-            'amount': amount,
-        },
-    )
+    # Désactivé côté client : envoi via WhatsApp uniquement
+    # envoyer_notification(
+    #     'reservation_creee',
+    #     client.email,
+    #     sujet,
+    #     corps,
+    #     reservation,
+    #     params={
+    #         'to_email': client.email,
+    #         'to_name': f'{client.prenom} {client.nom}',
+    #         'reservation_id': reservation.id,
+    #         'vehicle': vehicle,
+    #         'period': period,
+    #         'amount': amount,
+    #     },
+    # )
 
     admin_email = getattr(settings, 'CARLOC_ADMIN_EMAIL', None)
     if admin_email:
@@ -268,7 +269,8 @@ def notifier_reservation_annulee(reservation):
         f'Votre reservation #{reservation.id} a ete annulee.\n\n'
         f'CarLoc'
     )
-    envoyer_notification('reservation_annulee', client.email, sujet, corps, reservation)
+    # Désactivé côté client :
+    # envoyer_notification('reservation_annulee', client.email, sujet, corps, reservation)
 
 
 def notifier_paiement_recu(paiement):
@@ -283,7 +285,8 @@ def notifier_paiement_recu(paiement):
         f'Reservation #{reservation.id} - Solde restant : {reservation.solde_restant} FCFA\n\n'
         f'CarLoc'
     )
-    envoyer_notification('paiement_recu', client.email, sujet, corps, reservation)
+    # Désactivé côté client (fait via WhatsApp) :
+    # envoyer_notification('paiement_recu', client.email, sujet, corps, reservation)
 
 
 def notifier_facture_emise(facture):
@@ -304,20 +307,21 @@ def notifier_facture_emise(facture):
         f'Connectez-vous a votre espace client pour consulter ou telecharger le PDF.\n\n'
         f'CarLoc'
     )
-    envoyer_notification(
-        'facture_emise',
-        client.email,
-        sujet,
-        corps,
-        reservation,
-        params={
-            'to_email': client.email,
-            'to_name': f'{client.prenom} {client.nom}',
-            'reservation_id': reservation.id,
-            'invoice_number': facture.numero,
-            'vehicle': vehicle,
-            'amount': f'{facture.montant_total}',
-            'status': facture.get_statut_display(),
-            'invoice_url': facture_url,
-        },
-    )
+    # Désactivé côté client (fait via WhatsApp) :
+    # envoyer_notification(
+    #     'facture_emise',
+    #     client.email,
+    #     sujet,
+    #     corps,
+    #     reservation,
+    #     params={
+    #         'to_email': client.email,
+    #         'to_name': f'{client.prenom} {client.nom}',
+    #         'reservation_id': reservation.id,
+    #         'invoice_number': facture.numero,
+    #         'vehicle': vehicle,
+    #         'amount': f'{facture.montant_total}',
+    #         'status': facture.get_statut_display(),
+    #         'invoice_url': facture_url,
+    #     },
+    # )

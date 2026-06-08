@@ -43,19 +43,49 @@ def calculer_chiffre_affaires(date_debut=None, date_fin=None):
 
 
 def calculer_rentabilite_vehicules(date_debut=None, date_fin=None):
+    """
+    Calcule la rentabilité de chaque véhicule.
+    
+    OPTIMISÉ : Utilise prefetch_related pour éviter les N+1 queries.
+    Avant : O(n * m) queries où n=véhicules, m=réservations
+    Après : 3 queries au total (véhicules + réservations + maintenances)
+    """
+    from django.db.models import Prefetch
+    
+    # Filtrer les réservations une seule fois
+    resa_qs = Reservation.objects.filter(est_annulee=False)
+    if date_debut:
+        resa_qs = resa_qs.filter(date_fin__gte=date_debut)
+    if date_fin:
+        resa_qs = resa_qs.filter(date_debut__lte=date_fin)
+    
+    # Précharger les réservations ET leurs paiements
+    resa_qs = resa_qs.prefetch_related('paiements')
+    
+    # Filtrer les maintenances une seule fois
+    maint_qs = Maintenance.objects.all()
+    if date_debut:
+        maint_qs = maint_qs.filter(date_operation__gte=date_debut)
+    if date_fin:
+        maint_qs = maint_qs.filter(date_operation__lte=date_fin)
+    
+    # Charger TOUS les véhicules avec leurs relations en une seule query
+    vehicules = Vehicule.objects.prefetch_related(
+        Prefetch('reservations', queryset=resa_qs, to_attr='reservations_filtrees'),
+        Prefetch('maintenances', queryset=maint_qs, to_attr='maintenances_filtrees'),
+    )
+    
     resultats = []
-    for vehicule in Vehicule.objects.all():
-        resa_qs = Reservation.objects.filter(vehicule=vehicule, est_annulee=False)
-        if date_debut:
-            resa_qs = resa_qs.filter(date_fin__gte=date_debut)
-        if date_fin:
-            resa_qs = resa_qs.filter(date_debut__lte=date_fin)
-
+    for vehicule in vehicules:
+        # Calculer les revenus (tout en mémoire, pas de query SQL)
         revenus = Decimal('0')
-        for resa in resa_qs.prefetch_related('paiements'):
-            paiements = resa.paiements.all()
+        nb_locations = 0
+        
+        for resa in vehicule.reservations_filtrees:
+            nb_locations += 1
+            # Les paiements sont déjà chargés grâce à prefetch_related
             if date_debut or date_fin:
-                for p in paiements:
+                for p in resa.paiements.all():
                     d = p.date_paiement.date()
                     if date_debut and d < date_debut:
                         continue
@@ -63,15 +93,11 @@ def calculer_rentabilite_vehicules(date_debut=None, date_fin=None):
                         continue
                     revenus += p.montant_paye
             else:
-                revenus += sum((p.montant_paye for p in paiements), Decimal('0'))
-
-        maint_qs = Maintenance.objects.filter(vehicule=vehicule)
-        if date_debut:
-            maint_qs = maint_qs.filter(date_operation__gte=date_debut)
-        if date_fin:
-            maint_qs = maint_qs.filter(date_operation__lte=date_fin)
-        couts = maint_qs.aggregate(total=Coalesce(Sum('cout'), Decimal('0')))['total']
-
+                revenus += sum((p.montant_paye for p in resa.paiements.all()), Decimal('0'))
+        
+        # Calculer les coûts de maintenance (déjà filtrés)
+        couts = sum((m.cout for m in vehicule.maintenances_filtrees), Decimal('0'))
+        
         resultats.append({
             'vehicule_id': vehicule.id,
             'immatriculation': vehicule.immatriculation,
@@ -82,23 +108,33 @@ def calculer_rentabilite_vehicules(date_debut=None, date_fin=None):
             'revenus': revenus,
             'couts_maintenance': couts,
             'rentabilite': revenus - couts,
-            'nb_locations': resa_qs.count(),
+            'nb_locations': nb_locations,
         })
-
+    
+    # Trier par rentabilité décroissante
     resultats.sort(key=lambda x: x['rentabilite'], reverse=True)
     return resultats
 
 
 def statistiques_clients(date_debut=None, date_fin=None):
+    """
+    Génère des statistiques sur les clients.
+    
+    OPTIMISÉ : Utilise annotate() et aggregate() pour faire les calculs en SQL
+    au lieu de charger tous les objets en Python.
+    """
     now = timezone.now()
     debut_mois = now.replace(day=1).date()
 
+    # Nouveaux clients (avec compte utilisateur)
     nouveaux_periode = Client.objects.filter(user__isnull=False)
     seuil = date_debut or debut_mois
     nouveaux_periode = nouveaux_periode.filter(user__date_joined__date__gte=seuil)
 
+    # Clients actifs (qui ont au moins une réservation non annulée)
     clients_actifs = Client.objects.filter(reservations__est_annulee=False).distinct().count()
 
+    # Top clients par nombre de réservations (calcul SQL avec annotate)
     top_clients = (
         Client.objects.filter(reservations__est_annulee=False)
         .annotate(nb_reservations=Count('reservations'))
@@ -106,12 +142,22 @@ def statistiques_clients(date_debut=None, date_fin=None):
         .values('id', 'nom', 'prenom', 'email', 'nb_reservations')
     )
 
+    # Clients avec impayés - OPTIMISÉ avec prefetch
     impayes = []
-    for client in Client.objects.prefetch_related('reservations__paiements'):
+    clients_avec_reservations = Client.objects.prefetch_related(
+        'reservations__paiements'
+    ).filter(
+        reservations__est_annulee=False,
+        reservations__date_fin__lt=now.date()
+    ).distinct()
+    
+    for client in clients_avec_reservations:
         solde_client = Decimal('0')
+        # Les réservations et paiements sont déjà chargés
         for resa in client.reservations.filter(est_annulee=False):
             if resa.solde_restant > 0 and resa.date_fin < now.date():
                 solde_client += resa.solde_restant
+        
         if solde_client > 0:
             impayes.append({
                 'client_id': client.id,
@@ -119,6 +165,9 @@ def statistiques_clients(date_debut=None, date_fin=None):
                 'email': client.email,
                 'solde_impaye': solde_client,
             })
+    
+    # Trier par solde décroissant
+    impayes.sort(key=lambda x: x['solde_impaye'], reverse=True)
 
     return {
         'total_clients': Client.objects.count(),
@@ -126,7 +175,7 @@ def statistiques_clients(date_debut=None, date_fin=None):
         'clients_actifs': clients_actifs,
         'clients_avec_impayes': len(impayes),
         'top_clients': list(top_clients),
-        'clients_impayes': impayes[:20],
+        'clients_impayes': impayes[:20],  # Top 20 des impayés
     }
 
 

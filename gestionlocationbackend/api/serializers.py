@@ -416,7 +416,8 @@ class ReservationSerializer(serializers.ModelSerializer):
                 )
 
             exclude_pk = instance.pk if instance else None
-            if not vehicule_disponible_pour_periode(vehicule, debut, fin, exclude_reservation_pk=exclude_pk):
+            # lock=True pour verrouiller le véhicule et éviter les réservations concurrentes
+            if not vehicule_disponible_pour_periode(vehicule, debut, fin, exclude_reservation_pk=exclude_pk, lock=True):
                 raise serializers.ValidationError(
                     {'vehicule': 'Le véhicule est déjà réservé sur cette période.'}
                 )

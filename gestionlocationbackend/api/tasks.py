@@ -24,6 +24,50 @@ def send_facture_email(self, facture_id):
         logger.error('Erreur envoi facture %s: %s', facture_id, exc)
         raise self.retry(exc=exc, countdown=2 ** self.request.retries)
 
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_whatsapp_facture_emise(self, facture_id):
+    from .models import Facture
+    from .whatsapp_utils import envoyer_message_whatsapp
+    from django.conf import settings
+
+    try:
+        facture = Facture.objects.get(id=facture_id)
+        reservation = facture.reservation
+        client = reservation.client
+        
+        if not client.telephone:
+            logger.warning('Pas de numéro de téléphone pour le client %s', client.email)
+            return None
+
+        pdf_url = facture.fichier_pdf.url if facture.fichier_pdf else None
+        if pdf_url and pdf_url.startswith('/'):
+            base_url = getattr(settings, 'PUBLIC_BACKEND_URL', '').rstrip('/')
+            pdf_url = f"{base_url}{pdf_url}"
+
+        lines = [
+            f"Bonjour {client.prenom or ''} {client.nom or 'cher client'},",
+            "",
+            f"Votre facture {facture.numero} a été générée pour la réservation #{reservation.id}.",
+            f"Montant total : {facture.montant_total} FCFA",
+            f"Statut : {facture.get_statut_display()}",
+        ]
+        
+        if pdf_url:
+            lines.append("")
+            lines.append(f"Lien vers la facture/reçu : {pdf_url}")
+
+        lines.extend(["", "Merci pour votre confiance.", "L'équipe CarLoc"])
+
+        envoyer_message_whatsapp(client.telephone, "\n".join(lines))
+        logger.info('Facture %s envoyée sur WhatsApp au %s', facture_id, client.telephone)
+        return f'WhatsApp Facture {facture_id} envoyé'
+    except Facture.DoesNotExist:
+        logger.error('Facture %s introuvable pour WhatsApp', facture_id)
+        return None
+    except Exception as exc:
+        logger.error('Erreur WhatsApp facture %s: %s', facture_id, exc)
+        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def send_reservation_created_email(self, reservation_id):

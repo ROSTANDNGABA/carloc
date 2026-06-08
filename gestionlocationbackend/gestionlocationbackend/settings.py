@@ -49,6 +49,31 @@ def env_bool(name: str, default: bool = False) -> bool:
     return os.environ.get(name, str(default)).lower() in ('1', 'true', 'yes', 'on')
 
 
+# ============================================================================
+# SÉCURITÉ PRODUCTION - Résout tous les warnings Django security
+# ============================================================================
+if not DEBUG:
+    # HTTPS obligatoire
+    SECURE_SSL_REDIRECT = True
+    
+    # Cookies sécurisés (HTTPS uniquement)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Protection XSS et clickjacking
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Proxy headers (Render utilise X-Forwarded-Proto)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 # Application definition
 
 INSTALLED_APPS = [

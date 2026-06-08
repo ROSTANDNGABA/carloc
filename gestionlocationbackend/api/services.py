@@ -45,7 +45,24 @@ def reservations_chevauchantes(vehicule, date_debut, date_fin, exclude_pk=None):
     return qs
 
 
-def vehicule_disponible_pour_periode(vehicule, date_debut, date_fin, exclude_reservation_pk=None) -> bool:
+def vehicule_disponible_pour_periode(vehicule, date_debut, date_fin, exclude_reservation_pk=None, lock=False) -> bool:
+    """
+    Vérifie la disponibilité d'un véhicule pour une période donnée.
+    
+    Args:
+        vehicule: Le véhicule à vérifier
+        date_debut: Date de début de la période
+        date_fin: Date de fin de la période
+        exclude_reservation_pk: ID de réservation à exclure (pour modifications)
+        lock: Si True, verrouille le véhicule pour éviter les races conditions
+    
+    Returns:
+        bool: True si disponible, False sinon
+    """
+    # Verrouiller le véhicule en écriture si demandé (évite les réservations concurrentes)
+    if lock:
+        vehicule = Vehicule.objects.select_for_update().get(pk=vehicule.pk)
+    
     if vehicule.statut == 'maintenance':
         return False
     return not reservations_chevauchantes(
@@ -121,7 +138,11 @@ def creer_facture(reservation, type_facture='location', paiement=None, montant=N
         statut=statut,
     )
     generer_pdf_facture(facture)
-    enqueue_task(send_facture_email, facture.id)
+    
+    # Remplacé: enqueue_task(send_facture_email, facture.id)
+    # On envoie maintenant la facture directement sur WhatsApp
+    from .tasks import send_whatsapp_facture_emise
+    enqueue_task(send_whatsapp_facture_emise, facture.id)
     return facture
 
 
