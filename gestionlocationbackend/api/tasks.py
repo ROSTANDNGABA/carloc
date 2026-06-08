@@ -98,8 +98,14 @@ def send_whatsapp_paiement_received(self, paiement_id):
         
         facture = Facture.objects.filter(reservation=reservation).exclude(fichier_pdf='').order_by('-date_emission').first()
         if facture and facture.fichier_pdf:
+            from django.conf import settings
+            pdf_url = facture.fichier_pdf.url
+            # Si le lien est relatif (commence par /), on le transforme en URL absolue
+            if pdf_url.startswith('/'):
+                base_url = getattr(settings, 'PUBLIC_BACKEND_URL', '').rstrip('/')
+                pdf_url = f"{base_url}{pdf_url}"
             lines.append("")
-            lines.append(f"Lien vers la facture/recu : {facture.fichier_pdf.url}")
+            lines.append(f"Votre facture/recu : {pdf_url}")
 
         lines.extend(["", "Merci pour votre confiance.", "L'equipe CarLoc"])
 
