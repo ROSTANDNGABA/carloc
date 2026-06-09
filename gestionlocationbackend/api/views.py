@@ -212,7 +212,7 @@ class GestionnaireViewSet(viewsets.ModelViewSet):
 
 
 class VehiculeViewSet(viewsets.ModelViewSet):
-    queryset = Vehicule.objects.all()
+    queryset = Vehicule.objects.filter(is_active=True)
     serializer_class = VehiculeSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [SearchFilter]
