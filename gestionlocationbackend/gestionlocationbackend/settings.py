@@ -368,7 +368,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Développement sans SMTP : EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
-    'anymail.backends.brevo.EmailBackend',
+    'anymail.backends.resend.EmailBackend',
 ).strip()
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost').strip()
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587').strip())
@@ -384,12 +384,18 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 CARLOC_ADMIN_EMAIL = os.environ.get('CARLOC_ADMIN_EMAIL', EMAIL_HOST_USER or 'rostandngaba@gmail.com')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
 
-EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'brevo').strip().lower()
-BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
-BREVO_FROM_NAME = os.environ.get('BREVO_FROM_NAME', 'CarLoc').strip()
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'resend').strip().lower()
+
+# Resend configuration (pour emails admin)
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '').strip()
+
+# Twilio WhatsApp configuration
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '').strip()
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '').strip()
+TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER', '').strip()
 
 ANYMAIL = {
-    'BREVO_API_KEY': BREVO_API_KEY,
+    'RESEND_API_KEY': RESEND_API_KEY,
 }
 
 PUBLIC_BACKEND_URL = os.environ.get(

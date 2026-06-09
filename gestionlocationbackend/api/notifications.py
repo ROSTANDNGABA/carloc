@@ -1,4 +1,4 @@
-"""Notifications e-mail CarLoc (reservations, paiements, annulations)."""
+"""Notifications e-mail et WhatsApp CarLoc (reservations, paiements, annulations)."""
 
 import logging
 import traceback
@@ -6,10 +6,41 @@ import traceback
 import requests
 from django.conf import settings
 from django.core.mail import send_mail
+from twilio.rest import Client
 
 from .models import NotificationLog
 
 logger = logging.getLogger(__name__)
+
+
+def envoyer_notification_whatsapp(numero_telephone, message):
+    """Envoie une notification WhatsApp via Twilio."""
+    try:
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', None)
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', None)
+        whatsapp_number = getattr(settings, 'TWILIO_WHATSAPP_NUMBER', None)
+        
+        if not all([account_sid, auth_token, whatsapp_number]):
+            logger.warning("Configuration Twilio incomplete, WhatsApp non envoye")
+            return False
+        
+        # Formater le numéro pour WhatsApp
+        if not numero_telephone.startswith('whatsapp:'):
+            numero_telephone = f'whatsapp:{numero_telephone}'
+        
+        client = Client(account_sid, auth_token)
+        message_obj = client.messages.create(
+            body=message,
+            from_=whatsapp_number,
+            to=numero_telephone
+        )
+        
+        logger.info(f"WhatsApp envoye avec succes, SID: {message_obj.sid}")
+        return True
+        
+    except Exception as exc:
+        logger.error(f"Erreur envoi WhatsApp: {exc}")
+        return False
 
 
 def _enregistrer_log(
@@ -178,40 +209,34 @@ def notifier_reservation_creee(reservation):
     period = f"du {reservation.date_debut:%d/%m/%Y} au {reservation.date_fin:%d/%m/%Y}"
     amount = f"{reservation.montant_total}"
 
-    sujet = f"CarLoc - Reservation confirmee #{reservation.id}"
-    corps = (
-        f"Bonjour {client.prenom} {client.nom},\n\n"
-        f"Votre reservation est confirmee.\n"
-        f"Vehicule : {vehicle}\n"
-        f"Periode : {period}\n"
-        f"Montant estime : {amount} FCFA\n\n"
-        f"Cordialement,\nL'equipe CarLoc"
-    )
-    envoyer_notification(
-        'reservation_creee',
-        client.email,
-        sujet,
-        corps,
-        reservation,
-        params={
-            'to_email': client.email,
-            'to_name': f'{client.prenom} {client.nom}',
-            'reservation_id': reservation.id,
-            'vehicle': vehicle,
-            'period': period,
-            'amount': amount,
-        },
-    )
+    # Notification WhatsApp au client
+    if client.telephone:
+        message_whatsapp = (
+            f"🚗 *Reservation confirmee #{reservation.id}*\n\n"
+            f"Bonjour {client.prenom},\n\n"
+            f"Votre reservation est confirmee !\n"
+            f"📌 Vehicule : {vehicle}\n"
+            f"📅 Periode : {period}\n"
+            f"💰 Montant : {amount} FCFA\n\n"
+            f"Merci de votre confiance !\n"
+            f"L'equipe CarLoc"
+        )
+        envoyer_notification_whatsapp(client.telephone, message_whatsapp)
 
+    # Notification Email à l'admin
     admin_email = getattr(settings, "CARLOC_ADMIN_EMAIL", None)
     if admin_email:
         sujet_admin = f"[CarLoc Admin] Nouvelle reservation #{reservation.id}"
         corps_admin = (
-            f"Nouvelle reservation de {client.nom} {client.prenom}.\n"
-            f"Email client : {client.email}\n"
+            f"Nouvelle reservation recue !\n\n"
+            f"Client : {client.prenom} {client.nom}\n"
+            f"Email : {client.email}\n"
+            f"Telephone : {client.telephone or 'Non renseigne'}\n\n"
             f"Vehicule : {vehicle}\n"
             f"Periode : {period}\n"
-            f"Montant estime : {amount} FCFA"
+            f"Montant : {amount} FCFA\n"
+            f"Statut : {reservation.get_statut_display()}\n\n"
+            f"Voir details : {settings.PUBLIC_BACKEND_URL}/admin/api/reservation/{reservation.id}/change/"
         )
         envoyer_notification(
             "reservation_admin",
@@ -219,43 +244,73 @@ def notifier_reservation_creee(reservation):
             sujet_admin,
             corps_admin,
             reservation,
-            params={
-                "to_email": admin_email,
-                "to_name": "Administrateur CarLoc",
-                "reservation_id": reservation.id,
-                "client_name": f"{client.prenom} {client.nom}",
-                "client_email": client.email,
-                "vehicle": vehicle,
-                "period": period,
-                "amount": amount,
-            },
         )
 
 
 def notifier_reservation_annulee(reservation):
     client = reservation.client
-    sujet = f"CarLoc - Annulation reservation #{reservation.id}"
-    corps = (
-        f"Bonjour {client.prenom},\n\n"
-        f"Votre reservation #{reservation.id} a ete annulee.\n\n"
-        f"CarLoc"
-    )
-    envoyer_notification('reservation_annulee', client.email, sujet, corps, reservation)
+    
+    # Notification WhatsApp au client
+    if client.telephone:
+        message_whatsapp = (
+            f"❌ *Reservation annulee #{reservation.id}*\n\n"
+            f"Bonjour {client.prenom},\n\n"
+            f"Votre reservation a ete annulee.\n"
+            f"Vehicule : {reservation.vehicule.marque} {reservation.vehicule.modele}\n\n"
+            f"Pour toute question, contactez-nous.\n"
+            f"CarLoc"
+        )
+        envoyer_notification_whatsapp(client.telephone, message_whatsapp)
+    
+    # Notification Email à l'admin
+    admin_email = getattr(settings, "CARLOC_ADMIN_EMAIL", None)
+    if admin_email:
+        sujet_admin = f"[CarLoc Admin] Annulation reservation #{reservation.id}"
+        corps_admin = (
+            f"Une reservation a ete annulee.\n\n"
+            f"Client : {client.prenom} {client.nom}\n"
+            f"Reservation : #{reservation.id}\n"
+            f"Vehicule : {reservation.vehicule.marque} {reservation.vehicule.modele}\n"
+            f"Montant rembourse : {reservation.montant_total} FCFA"
+        )
+        envoyer_notification('annulation_admin', admin_email, sujet_admin, corps_admin, reservation)
 
 
 def notifier_paiement_recu(paiement):
     reservation = paiement.reservation
     client = reservation.client
-    sujet = f"CarLoc - Paiement recu ({paiement.montant_paye} FCFA)"
     type_paiement = "acompte" if paiement.est_acompte else "paiement"
-    corps = (
-        f"Bonjour {client.prenom},\n\n"
-        f"Nous avons bien recu votre {type_paiement} de {paiement.montant_paye} FCFA "
-        f"(mode : {paiement.get_mode_paiement_display()}).\n"
-        f"Reservation #{reservation.id} - Solde restant : {reservation.solde_restant} FCFA\n\n"
-        f"CarLoc"
-    )
-    envoyer_notification('paiement_recu', client.email, sujet, corps, reservation)
+    
+    # Notification WhatsApp au client
+    if client.telephone:
+        message_whatsapp = (
+            f"💰 *Paiement recu*\n\n"
+            f"Bonjour {client.prenom},\n\n"
+            f"Nous avons bien recu votre {type_paiement} :\n"
+            f"💵 Montant : {paiement.montant_paye} FCFA\n"
+            f"💳 Mode : {paiement.get_mode_paiement_display()}\n"
+            f"📋 Reservation : #{reservation.id}\n"
+            f"📊 Solde restant : {reservation.solde_restant} FCFA\n\n"
+            f"Merci !\n"
+            f"CarLoc"
+        )
+        envoyer_notification_whatsapp(client.telephone, message_whatsapp)
+    
+    # Notification Email à l'admin
+    admin_email = getattr(settings, "CARLOC_ADMIN_EMAIL", None)
+    if admin_email:
+        sujet_admin = f"[CarLoc Admin] Paiement recu - Reservation #{reservation.id}"
+        corps_admin = (
+            f"Un paiement a ete enregistre.\n\n"
+            f"Client : {client.prenom} {client.nom}\n"
+            f"Type : {type_paiement.capitalize()}\n"
+            f"Montant : {paiement.montant_paye} FCFA\n"
+            f"Mode : {paiement.get_mode_paiement_display()}\n"
+            f"Reservation : #{reservation.id}\n"
+            f"Solde restant : {reservation.solde_restant} FCFA\n"
+            f"Total reservation : {reservation.montant_total} FCFA"
+        )
+        envoyer_notification('paiement_admin', admin_email, sujet_admin, corps_admin, reservation)
 
 
 def notifier_facture_emise(facture):
@@ -266,30 +321,38 @@ def notifier_facture_emise(facture):
     if facture.fichier_pdf:
         facture_url = f"{settings.PUBLIC_BACKEND_URL}{facture.fichier_pdf.url}"
 
-    sujet = f"CarLoc - Facture {facture.numero}"
-    corps = (
-        f"Bonjour {client.prenom},\n\n"
-        f"Votre facture {facture.numero} a ete generee pour la reservation #{reservation.id}.\n"
-        f"Vehicule : {vehicle}\n"
-        f"Montant total : {facture.montant_total} FCFA\n"
-        f"Statut : {facture.get_statut_display()}\n\n"
-        f"Connectez-vous a votre espace client pour consulter ou telecharger le PDF.\n\n"
-        f"CarLoc"
-    )
-    envoyer_notification(
-        'facture_emise',
-        client.email,
-        sujet,
-        corps,
-        reservation,
-        params={
-            'to_email': client.email,
-            'to_name': f'{client.prenom} {client.nom}',
-            'reservation_id': reservation.id,
-            'invoice_number': facture.numero,
-            'vehicle': vehicle,
-            'amount': f'{facture.montant_total}',
-            'status': facture.get_statut_display(),
-            'invoice_url': facture_url,
-        },
-    )
+    # Notification WhatsApp au client
+    if client.telephone:
+        envoyer_notification_whatsapp(
+            client.telephone,
+            f"🧾 *Facture {facture.numero}*\n\n"
+            f"Bonjour {client.prenom},\n\n"
+            f"Votre facture pour la reservation #{reservation.id} est disponible.\n"
+            f"Vehicule : {vehicle}\n"
+            f"Montant : {facture.montant_total} FCFA\n"
+            f"Statut : {facture.get_statut_display()}\n\n"
+            f"Connectez-vous pour telecharger : {settings.PUBLIC_BACKEND_URL}\n\n"
+            f"CarLoc"
+        )
+    
+    # Notification Email à l'admin
+    admin_email = getattr(settings, "CARLOC_ADMIN_EMAIL", None)
+    if admin_email:
+        sujet_admin = f"[CarLoc Admin] Facture {facture.numero} emise"
+        corps_admin = (
+            f"Une facture a ete generee.\n\n"
+            f"Client : {client.prenom} {client.nom} ({client.email})\n"
+            f"Facture : {facture.numero}\n"
+            f"Reservation : #{reservation.id}\n"
+            f"Vehicule : {vehicle}\n"
+            f"Montant : {facture.montant_total} FCFA\n"
+            f"Statut : {facture.get_statut_display()}\n\n"
+            f"PDF : {facture_url if facture_url else 'Non disponible'}"
+        )
+        envoyer_notification(
+            'facture_admin',
+            admin_email,
+            sujet_admin,
+            corps_admin,
+            reservation,
+        )

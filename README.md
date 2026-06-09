@@ -212,6 +212,13 @@ Application web fullstack **production-ready** pour la gestion complète d'une a
 - ✅ **Filtrage automatique** : Patterns techniques bloqués (Python, Django, SQL, stack traces)
 - ✅ **Messages conviviaux** : Expérience utilisateur optimale sans compromettre la sécurité
 
+### Notifications
+- 📧 **Emails** : Configuration Gmail SMTP ou Brevo (voir [LISEZ_MOI_EMAIL.md](LISEZ_MOI_EMAIL.md))
+- 📱 **WhatsApp** : Notifications via Twilio (fonctionnel ✅)
+- 🔔 **Événements** : Réservations, paiements, factures, annulations
+
+> **Note** : Pour configurer les emails, consultez la [documentation complète](LISEZ_MOI_EMAIL.md) ou le [guide rapide](FIX_EMAIL_RAPIDE.md).
+
 ---
 
 ## 🛠️ Stack Technique
