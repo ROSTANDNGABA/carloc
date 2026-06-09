@@ -80,64 +80,7 @@ def _envoyer_notification_emailjs(
     response.raise_for_status()
 
 
-def _envoyer_notification_resend(destinataire, sujet, corps) -> None:
-    """Envoi via l'API HTTP Resend."""
-    api_key = getattr(settings, "RESEND_API_KEY", "").strip()
-    from_email = getattr(settings, "RESEND_FROM_EMAIL", "").strip()
-    from_name = getattr(settings, "RESEND_FROM_NAME", "CarLoc").strip()
 
-    if not api_key:
-        raise RuntimeError("RESEND_API_KEY manquant.")
-    if not from_email:
-        raise RuntimeError("RESEND_FROM_EMAIL manquant.")
-
-    response = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "from": f"{from_name} <{from_email}>",
-            "to": [destinataire],
-            "subject": sujet,
-            "text": corps,
-        },
-        timeout=15,
-    )
-    if response.status_code not in (200, 201):
-        raise RuntimeError(f"Resend API erreur {response.status_code}: {response.text}")
-
-
-def _envoyer_notification_mailgun(destinataire, sujet, corps) -> None:
-    """Envoi via l'API HTTP Mailgun. Domaine sandbox gratuit, vers destinataires autorisés."""
-    api_key = getattr(settings, "MAILGUN_API_KEY", "").strip()
-    domain = getattr(settings, "MAILGUN_DOMAIN", "").strip()
-    from_email = getattr(settings, "MAILGUN_FROM_EMAIL", "").strip()
-    from_name = getattr(settings, "MAILGUN_FROM_NAME", "CarLoc").strip()
-
-    if not api_key:
-        raise RuntimeError("MAILGUN_API_KEY manquant.")
-    if not domain:
-        raise RuntimeError("MAILGUN_DOMAIN manquant.")
-    if not from_email:
-        raise RuntimeError("MAILGUN_FROM_EMAIL manquant.")
-
-    response = requests.post(
-        f"https://api.mailgun.net/v3/{domain}/messages",
-        auth=("api", api_key),
-        data={
-            "from": f"{from_name} <{from_email}>",
-            "to": destinataire,
-            "subject": sujet,
-            "text": corps,
-        },
-        timeout=15,
-    )
-    if response.status_code not in (200, 201):
-        raise RuntimeError(
-            f"Mailgun API erreur {response.status_code}: {response.text}"
-        )
 
 
 def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
@@ -191,11 +134,8 @@ def envoyer_notification(
             _envoyer_notification_emailjs(
                 type_notif, destinataire, sujet, corps, params=params
             )
-        elif provider == "brevo":
-            _envoyer_notification_resend(destinataire, sujet, corps)
-        elif provider == "resend":
-            _envoyer_notification_resend(destinataire, sujet, corps)
         else:
+            # anymail (brevo/resend) or django smtp
             _envoyer_notification_smtp(sujet, corps, destinataire)
 
         _enregistrer_log(
@@ -247,22 +187,21 @@ def notifier_reservation_creee(reservation):
         f"Montant estime : {amount} FCFA\n\n"
         f"Cordialement,\nL'equipe CarLoc"
     )
-    # Désactivé côté client : envoi via WhatsApp uniquement
-    # envoyer_notification(
-    #     'reservation_creee',
-    #     client.email,
-    #     sujet,
-    #     corps,
-    #     reservation,
-    #     params={
-    #         'to_email': client.email,
-    #         'to_name': f'{client.prenom} {client.nom}',
-    #         'reservation_id': reservation.id,
-    #         'vehicle': vehicle,
-    #         'period': period,
-    #         'amount': amount,
-    #     },
-    # )
+    envoyer_notification(
+        'reservation_creee',
+        client.email,
+        sujet,
+        corps,
+        reservation,
+        params={
+            'to_email': client.email,
+            'to_name': f'{client.prenom} {client.nom}',
+            'reservation_id': reservation.id,
+            'vehicle': vehicle,
+            'period': period,
+            'amount': amount,
+        },
+    )
 
     admin_email = getattr(settings, "CARLOC_ADMIN_EMAIL", None)
     if admin_email:
@@ -301,8 +240,7 @@ def notifier_reservation_annulee(reservation):
         f"Votre reservation #{reservation.id} a ete annulee.\n\n"
         f"CarLoc"
     )
-    # Désactivé côté client :
-    # envoyer_notification('reservation_annulee', client.email, sujet, corps, reservation)
+    envoyer_notification('reservation_annulee', client.email, sujet, corps, reservation)
 
 
 def notifier_paiement_recu(paiement):
@@ -317,8 +255,7 @@ def notifier_paiement_recu(paiement):
         f"Reservation #{reservation.id} - Solde restant : {reservation.solde_restant} FCFA\n\n"
         f"CarLoc"
     )
-    # Désactivé côté client (fait via WhatsApp) :
-    # envoyer_notification('paiement_recu', client.email, sujet, corps, reservation)
+    envoyer_notification('paiement_recu', client.email, sujet, corps, reservation)
 
 
 def notifier_facture_emise(facture):
@@ -339,21 +276,20 @@ def notifier_facture_emise(facture):
         f"Connectez-vous a votre espace client pour consulter ou telecharger le PDF.\n\n"
         f"CarLoc"
     )
-    # Désactivé côté client (fait via WhatsApp) :
-    # envoyer_notification(
-    #     'facture_emise',
-    #     client.email,
-    #     sujet,
-    #     corps,
-    #     reservation,
-    #     params={
-    #         'to_email': client.email,
-    #         'to_name': f'{client.prenom} {client.nom}',
-    #         'reservation_id': reservation.id,
-    #         'invoice_number': facture.numero,
-    #         'vehicle': vehicle,
-    #         'amount': f'{facture.montant_total}',
-    #         'status': facture.get_statut_display(),
-    #         'invoice_url': facture_url,
-    #     },
-    # )
+    envoyer_notification(
+        'facture_emise',
+        client.email,
+        sujet,
+        corps,
+        reservation,
+        params={
+            'to_email': client.email,
+            'to_name': f'{client.prenom} {client.nom}',
+            'reservation_id': reservation.id,
+            'invoice_number': facture.numero,
+            'vehicle': vehicle,
+            'amount': f'{facture.montant_total}',
+            'status': facture.get_statut_display(),
+            'invoice_url': facture_url,
+        },
+    )

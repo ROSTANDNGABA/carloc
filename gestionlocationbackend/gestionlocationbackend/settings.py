@@ -368,7 +368,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Développement sans SMTP : EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend',
+    'anymail.backends.sendinblue.EmailBackend',
 ).strip()
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost').strip()
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587').strip())
@@ -379,43 +379,24 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').strip()
 # Avec Gmail, l'expéditeur doit en général être identique à EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = os.environ.get(
     'DEFAULT_FROM_EMAIL',
-    EMAIL_HOST_USER or 'noreply@carloc.cm',
+    EMAIL_HOST_USER or 'rostandngaba@gmail.com',
 )
-CARLOC_ADMIN_EMAIL = os.environ.get('CARLOC_ADMIN_EMAIL', EMAIL_HOST_USER or 'admin@carloc.cm')
+CARLOC_ADMIN_EMAIL = os.environ.get('CARLOC_ADMIN_EMAIL', EMAIL_HOST_USER or 'rostandngaba@gmail.com')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
 
-# Email provider: "django" utilise SMTP Django, "emailjs" utilise l'API REST EmailJS.
-# Sur Render, définir EMAIL_PROVIDER=django pour utiliser Gmail SMTP (recommandé).
-EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'django').strip().lower()
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'brevo').strip().lower()
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
 BREVO_FROM_NAME = os.environ.get('BREVO_FROM_NAME', 'CarLoc').strip()
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '').strip()
-RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', '').strip()
-RESEND_FROM_NAME = os.environ.get('RESEND_FROM_NAME', 'CarLoc').strip()
 
-# Anymail — Resend (API HTTP, fonctionne sur Render free tier)
 ANYMAIL = {
-    'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', '').strip(),
+    'SENDINBLUE_API_KEY': BREVO_API_KEY,
 }
-EMAILJS_SERVICE_ID = os.environ.get('EMAILJS_SERVICE_ID', '').strip()
-EMAILJS_TEMPLATE_ID = os.environ.get('EMAILJS_TEMPLATE_ID', '').strip()
-EMAILJS_TEMPLATE_RESERVATION_ID = os.environ.get('EMAILJS_TEMPLATE_RESERVATION_ID', EMAILJS_TEMPLATE_ID).strip()
-EMAILJS_TEMPLATE_ADMIN_RESERVATION_ID = os.environ.get(
-    'EMAILJS_TEMPLATE_ADMIN_RESERVATION_ID',
-    EMAILJS_TEMPLATE_ID,
-).strip()
-EMAILJS_TEMPLATE_FACTURE_ID = os.environ.get('EMAILJS_TEMPLATE_FACTURE_ID', EMAILJS_TEMPLATE_ID).strip()
-EMAILJS_PUBLIC_KEY = os.environ.get('EMAILJS_PUBLIC_KEY', '').strip()
-EMAILJS_PRIVATE_KEY = os.environ.get('EMAILJS_PRIVATE_KEY', '').strip()
+
 PUBLIC_BACKEND_URL = os.environ.get(
     'PUBLIC_BACKEND_URL',
     f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'carloc.onrender.com')}",
 ).rstrip('/')
 
-# --- Twilio WhatsApp ---
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '').strip()
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '').strip()
-TWILIO_WHATSAPP_NUMBER = os.environ.get('TWILIO_WHATSAPP_NUMBER', '').strip()
 
 # --- Interface Django Admin (Jazzmin) — thème CarLoc ---
 JAZZMIN_SETTINGS = {

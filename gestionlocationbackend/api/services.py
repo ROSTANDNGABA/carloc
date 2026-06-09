@@ -24,7 +24,6 @@ from .tasks import (
     send_paiement_received_email,
     send_reservation_cancelled_email,
     send_reservation_created_email,
-    send_whatsapp_paiement_received,
 )
 from .utils import calculer_montant_location, nb_jours_location
 from django.contrib.contenttypes.models import ContentType
@@ -159,11 +158,7 @@ def creer_facture(
     )
     generer_pdf_facture(facture)
 
-    # Remplacé: enqueue_task(send_facture_email, facture.id)
-    # On envoie maintenant la facture directement sur WhatsApp
-    from .tasks import send_whatsapp_facture_emise
-
-    enqueue_task(send_whatsapp_facture_emise, facture.id)
+    enqueue_task(send_facture_email, facture.id)
     return facture
 
 
@@ -469,7 +464,7 @@ def apres_creation_paiement(paiement: Paiement) -> Paiement:
         )
     mettre_a_jour_facture_location(paiement.reservation)
     enqueue_task(send_paiement_received_email, paiement.id)
-    enqueue_task(send_whatsapp_paiement_received, paiement.id)
+    enqueue_task(send_paiement_received_email, paiement.id)
     invalidate_dashboard_cache()
     return paiement
 
