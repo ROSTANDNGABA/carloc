@@ -126,8 +126,9 @@ import { EMPTY_VEHICULE_FORM, VehiculeFormValue } from '../vehicule-form/vehicul
                   </select>
                 </label>
                 <label>
-                  <span>Image du véhicule</span>
+                  <span>Image du véhicule <small style="color: var(--carloc-text-muted);">(Max 10 MB)</small></span>
                   <input type="file" accept="image/*" (change)="onImageChange($event)" />
+                  <small style="color: var(--carloc-text-muted); display: block; margin-top: 0.25rem;">Formats acceptés : JPG, PNG, WebP. Taille maximale : 10 MB</small>
                 </label>
               </div>
               <div class="modal-footer">
@@ -307,7 +308,24 @@ export class AdminVehiclesPageComponent {
 
   onImageChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedImage.set(input.files?.[0] ?? null);
+    const file = input.files?.[0];
+    
+    if (!file) {
+      this.selectedImage.set(null);
+      return;
+    }
+    
+    // Vérifier la taille du fichier (max 10 MB pour Cloudinary gratuit)
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxSizeInBytes) {
+      this.error.set(`L'image est trop volumineuse (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum autorisé : 10 MB. Veuillez choisir une image plus petite ou la compresser.`);
+      input.value = ''; // Reset input
+      this.selectedImage.set(null);
+      return;
+    }
+    
+    this.selectedImage.set(file);
+    this.error.set(''); // Clear any previous error
   }
 
   applySearch(): void {
