@@ -115,26 +115,31 @@ def _envoyer_notification_emailjs(
 
 
 def _envoyer_notification_smtp(sujet, corps, destinataire) -> None:
-    """Envoi SMTP via Django. Attention : bloqué sur Render Free tier."""
+    """Envoi email via Django (Resend/Anymail ou SMTP classique)."""
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "").strip()
-    host_user = getattr(settings, "EMAIL_HOST_USER", "").strip()
-    host_password = getattr(settings, "EMAIL_HOST_PASSWORD", "").strip()
     backend = getattr(settings, "EMAIL_BACKEND", "").strip()
+    provider = getattr(settings, "EMAIL_PROVIDER", "").strip().lower()
 
     logger.info(
-        "SMTP config — backend=%s host=%s port=%s tls=%s user=%s from=%s",
+        "Email config — backend=%s provider=%s from=%s",
         backend,
-        getattr(settings, "EMAIL_HOST", "").strip(),
-        getattr(settings, "EMAIL_PORT", ""),
-        getattr(settings, "EMAIL_USE_TLS", ""),
-        host_user,
+        provider,
         from_email,
     )
 
-    if not host_user or not host_password:
-        raise RuntimeError("EMAIL_HOST_USER ou EMAIL_HOST_PASSWORD manquant.")
     if not from_email:
         raise RuntimeError("DEFAULT_FROM_EMAIL manquant.")
+    
+    # Vérification selon le provider
+    if provider == 'resend':
+        resend_key = getattr(settings, "RESEND_API_KEY", "").strip()
+        if not resend_key:
+            raise RuntimeError("RESEND_API_KEY manquant.")
+    elif provider == 'smtp':
+        host_user = getattr(settings, "EMAIL_HOST_USER", "").strip()
+        host_password = getattr(settings, "EMAIL_HOST_PASSWORD", "").strip()
+        if not host_user or not host_password:
+            raise RuntimeError("EMAIL_HOST_USER ou EMAIL_HOST_PASSWORD manquant pour SMTP.")
 
     send_mail(
         subject=sujet,
@@ -234,8 +239,7 @@ def notifier_reservation_creee(reservation):
             f"Telephone : {client.telephone or 'Non renseigne'}\n\n"
             f"Vehicule : {vehicle}\n"
             f"Periode : {period}\n"
-            f"Montant : {amount} FCFA\n"
-            f"Statut : {reservation.get_statut_display()}\n\n"
+            f"Montant : {amount} FCFA\n\n"
             f"Voir details : {settings.PUBLIC_BACKEND_URL}/admin/api/reservation/{reservation.id}/change/"
         )
         envoyer_notification(
