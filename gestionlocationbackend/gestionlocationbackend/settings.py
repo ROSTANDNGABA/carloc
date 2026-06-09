@@ -364,6 +364,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Taille maximale des uploads (Django)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (Cloudinary gratuit)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+
 # E-mail — notifications CarLoc
 # Développement sans SMTP : EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 EMAIL_BACKEND = os.environ.get(

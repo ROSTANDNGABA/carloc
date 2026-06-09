@@ -208,6 +208,18 @@ class VehiculeSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_image(self, value):
+        """Valide la taille de l'image (max 10 MB pour Cloudinary gratuit)"""
+        if value:
+            max_size = 10 * 1024 * 1024  # 10 MB
+            if value.size > max_size:
+                size_mb = value.size / 1024 / 1024
+                raise serializers.ValidationError(
+                    f"L'image est trop volumineuse ({size_mb:.1f} MB). "
+                    f"Maximum autorisé : 10 MB. Veuillez compresser l'image."
+                )
+        return value
+
     def validate_immatriculation(self, value):
         value = value.strip().upper()
         instance = self.instance
