@@ -12,5 +12,6 @@ export interface Facture {
   fichier_pdf_url?: string;
   nom_client?: string;
   vehicule_info?: string;
+  categorie_vehicule?: string;
   reservation_total_paye?: number;
 }

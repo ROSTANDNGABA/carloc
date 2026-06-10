@@ -6,126 +6,190 @@ import { ClientHistorique, ClientService } from '@app/core/services/client.servi
 import { extractApiError } from '@app/core/utils/api.util';
 import { Client } from '@app/models/client.model';
 import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatters';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-client-dashboard-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-<div class="lux-dashboard">
+<div class="space-y-8 animate-fade-in">
   @if (loading()) {
-    <div class="lux-skeleton-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       @for (i of [1,2,3,4]; track i) {
-        <div class="lux-skeleton-card"></div>
+        <div class="bg-gray-100 dark:bg-carloc-800/50 rounded-2xl h-32 animate-pulse"></div>
       }
     </div>
   } @else {
-    <div class="dashboard-header">
-      <h2>Bienvenue, {{ clientTitle() }}</h2>
-      <p>Voici un résumé de votre activité de location avec CarLoc.</p>
+    <div class="flex flex-col gap-2">
+      <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Bienvenue, {{ clientTitle() }}</h2>
+      <p class="text-gray-500 dark:text-gray-400">Voici un résumé de votre activité de location avec CarLoc.</p>
     </div>
     
-    <div class="lux-metric-grid">
-      <div class="lux-metric-card">
-        <div class="metric-icon"><i class="bi bi-car-front"></i></div>
-        <div class="metric-info">
-          <span class="metric-label">Réservations Actives</span>
-          <strong class="metric-value">{{ history()?.resume?.nb_reservations || 0 }}</strong>
+    <!-- Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Active Reservations -->
+      <div class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-2xl p-6 shadow-sm flex items-center gap-5 transition-transform hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-carloc-800 flex items-center justify-center text-gray-700 dark:text-gray-300 text-2xl">
+          <i class="bi bi-car-front"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Réservations Actives</p>
+          <strong class="text-2xl font-black text-gray-900 dark:text-white">{{ history()?.resume?.nb_reservations || 0 }}</strong>
         </div>
       </div>
-      <div class="lux-metric-card">
-        <div class="metric-icon"><i class="bi bi-clock-history"></i></div>
-        <div class="metric-info">
-          <span class="metric-label">En attente</span>
-          <strong class="metric-value">{{ history()?.resume?.solde_impaye || 0 }}</strong>
+
+      <!-- Pending Amount -->
+      <div class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-2xl p-6 shadow-sm flex items-center gap-5 transition-transform hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400 text-2xl">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">En attente</p>
+          <strong class="text-2xl font-black text-gray-900 dark:text-white">{{ history()?.resume?.solde_impaye || 0 }}</strong>
         </div>
       </div>
-      <div class="lux-metric-card">
-        <div class="metric-icon"><i class="bi bi-check-circle"></i></div>
-        <div class="metric-info">
-          <span class="metric-label">Total Réservations</span>
-          <strong class="metric-value">{{ history()?.resume?.nb_paiements || 0 }}</strong>
+
+      <!-- Total Reservations -->
+      <div class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-2xl p-6 shadow-sm flex items-center gap-5 transition-transform hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 text-2xl">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Réservations</p>
+          <strong class="text-2xl font-black text-gray-900 dark:text-white">{{ history()?.resume?.nb_paiements || 0 }}</strong>
         </div>
       </div>
-      <div class="lux-metric-card highlight">
-        <div class="metric-icon"><i class="bi bi-cash-coin"></i></div>
-        <div class="metric-info">
-          <span class="metric-label">Total Dépensé</span>
-          <strong class="metric-value">{{ moneyFmt(history()?.resume?.total_depense || 0) }}</strong>
+
+      <!-- Total Spent (Highlight) -->
+      <div class="bg-carloc-950 dark:bg-white rounded-2xl p-6 shadow-xl flex items-center gap-5 transition-transform hover:-translate-y-1 relative overflow-hidden">
+        <!-- Glow effect inside the dark card -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-gray-700 dark:bg-gray-300 rounded-full mix-blend-screen filter blur-2xl opacity-40"></div>
+        
+        <div class="w-14 h-14 rounded-xl bg-gray-800 dark:bg-gray-100 flex items-center justify-center text-white dark:text-carloc-950 text-2xl relative z-10">
+          <i class="bi bi-cash-coin"></i>
+        </div>
+        <div class="relative z-10">
+          <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Total Dépensé</p>
+          <strong class="text-2xl font-black text-white dark:text-carloc-950">{{ moneyFmt(history()?.resume?.total_depense || 0) }}</strong>
         </div>
       </div>
     </div>
     
-    <div class="dashboard-sections">
-      <section class="lux-panel">
-        <div class="panel-header">
-          <h3>Réservations Récentes</h3>
-          <a routerLink="/client/reservations" class="lux-btn lux-btn-outline btn-small">Tout voir</a>
+    <!-- Lists Section -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      
+      <!-- Recent Reservations -->
+      <section class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-carloc-800 flex justify-between items-center bg-gray-50/50 dark:bg-carloc-900/50">
+          <h3 class="font-bold text-gray-900 dark:text-white text-lg">Réservations Récentes</h3>
+          <a routerLink="/client/reservations" class="text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-300 dark:border-carloc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-carloc-800 transition-colors">Tout voir</a>
         </div>
-        <div class="panel-body">
+        <div class="p-0 flex-1">
           @if (history()?.reservations?.length) {
-            <table class="lux-table">
-              <thead>
-                <tr>
-                  <th>Véhicule</th>
-                  <th>Période</th>
-                  <th>Statut</th>
-                  <th>Montant</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (res of history()?.reservations; track res.id) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
                   <tr>
-                    <td><strong>{{ res.vehicule }}</strong></td>
-                    <td>{{ dateFmt(res.date_debut) }} - {{ dateFmt(res.date_fin) }}</td>
-                    <td><span class="status-badge" [class.annulee]="res.est_annulee">{{ res.est_annulee ? 'Annulée' : 'Active' }}</span></td>
-                    <td>{{ moneyFmt(res.montant_du) }}</td>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Véhicule</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Période</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Statut</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Montant</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-carloc-800">
+                  @for (res of history()?.reservations; track res.id) {
+                    <tr class="hover:bg-gray-50 dark:hover:bg-carloc-800/50 transition-colors">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <strong class="text-gray-900 dark:text-white font-semibold">{{ res.vehicule }}</strong>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        {{ dateFmt(res.date_debut) }} - {{ dateFmt(res.date_fin) }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span 
+                          class="px-2.5 py-1 rounded-md text-xs font-bold"
+                          [ngClass]="res.est_annulee ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'"
+                        >
+                          {{ res.est_annulee ? 'Annulée' : 'Active' }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ moneyFmt(res.montant_du) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           } @else {
-            <div class="lux-empty-state">
-              <i class="bi bi-calendar-x"></i>
-              <p>Vous n'avez aucune réservation récente.</p>
-              <a routerLink="/catalogue" class="lux-btn lux-btn-primary">Réserver un véhicule</a>
+            <div class="flex flex-col items-center justify-center p-12 text-center">
+              <div class="w-16 h-16 bg-gray-100 dark:bg-carloc-800 rounded-2xl flex items-center justify-center text-gray-400 dark:text-gray-500 text-3xl mb-4">
+                <i class="bi bi-calendar-x"></i>
+              </div>
+              <p class="text-gray-500 dark:text-gray-400 mb-6 font-medium">Vous n'avez aucune réservation récente.</p>
+              <a routerLink="/catalogue" class="px-6 py-3 bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold rounded-xl hover:bg-carloc-800 dark:hover:bg-gray-200 transition-colors shadow-md">
+                Réserver un véhicule
+              </a>
             </div>
           }
         </div>
       </section>
       
-      <section class="lux-panel">
-        <div class="panel-header">
-          <h3>Dernières Factures</h3>
-          <a routerLink="/client/factures" class="lux-btn lux-btn-outline btn-small">Tout voir</a>
+      <!-- Recent Invoices -->
+      <section class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-carloc-800 flex justify-between items-center bg-gray-50/50 dark:bg-carloc-900/50">
+          <h3 class="font-bold text-gray-900 dark:text-white text-lg">Dernières Factures</h3>
+          <a routerLink="/client/factures" class="text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-300 dark:border-carloc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-carloc-800 transition-colors">Tout voir</a>
         </div>
-        <div class="panel-body">
+        <div class="p-0 flex-1">
           @if (history()?.factures?.length) {
-            <table class="lux-table">
-              <thead>
-                <tr>
-                  <th>Référence</th>
-                  <th>Date</th>
-                  <th>Statut</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (fac of history()?.factures; track fac.id) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
                   <tr>
-                    <td><strong>{{ fac.numero }}</strong></td>
-                    <td>—</td>
-                    <td><span class="status-badge" [class]="fac.statut">{{ fac.statut }}</span></td>
-                    <td>{{ moneyFmt(fac.montant_total) }}</td>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Référence</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Date</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Statut</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-carloc-800 bg-white dark:bg-carloc-900">Total</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-carloc-800">
+                  @for (fac of history()?.factures; track fac.id) {
+                    <tr class="hover:bg-gray-50 dark:hover:bg-carloc-800/50 transition-colors">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <strong class="text-gray-900 dark:text-white font-semibold">{{ fac.numero }}</strong>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        —
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span 
+                          class="px-2.5 py-1 rounded-md text-xs font-bold capitalize"
+                          [ngClass]="{
+                            'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400': fac.statut === 'payee',
+                            'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400': fac.statut === 'impayee',
+                            'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400': fac.statut === 'en_attente'
+                          }"
+                        >
+                          {{ fac.statut }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ moneyFmt(fac.montant_total) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           } @else {
-            <div class="lux-empty-state">
-              <i class="bi bi-receipt"></i>
-              <p>Aucune facture récente.</p>
+            <div class="flex flex-col items-center justify-center p-12 text-center h-full">
+              <div class="w-16 h-16 bg-gray-100 dark:bg-carloc-800 rounded-2xl flex items-center justify-center text-gray-400 dark:text-gray-500 text-3xl mb-4">
+                <i class="bi bi-receipt"></i>
+              </div>
+              <p class="text-gray-500 dark:text-gray-400 font-medium">Aucune facture récente.</p>
             </div>
           }
         </div>
@@ -133,138 +197,7 @@ import { money, shortDate, statusLabel, statusTone } from '@app/shared/formatter
     </div>
   }
 </div>
-  `,
-  styles: [`
-  .dashboard-header {
-    margin-bottom: 2rem;
-  }
-  .dashboard-header h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  .dashboard-header p {
-    color: var(--lux-text-muted);
-  }
-  .lux-metric-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-  }
-  .lux-metric-card {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    box-shadow: var(--lux-shadow);
-  }
-  .lux-metric-card.highlight {
-    border-color: var(--lux-accent);
-    background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.1) 0%, var(--lux-surface) 100%);
-  }
-  .metric-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    background-color: rgba(212, 175, 55, 0.1);
-    color: var(--lux-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-  }
-  .metric-info {
-    display: flex;
-    flex-direction: column;
-  }
-  .metric-label {
-    font-size: 0.85rem;
-    color: var(--lux-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-  }
-  .metric-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-  }
-  .dashboard-sections {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-  .lux-panel {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    overflow: hidden;
-  }
-  .panel-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--lux-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .panel-header h3 {
-    font-size: 1.2rem;
-  }
-  .btn-small {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-  }
-  .panel-body {
-    padding: 1.5rem;
-  }
-  .lux-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .lux-table th {
-    text-align: left;
-    color: var(--lux-text-muted);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--lux-border);
-  }
-  .lux-table td {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--lux-border);
-  }
-  .lux-table tr:last-child td {
-    border-bottom: none;
-  }
-  .status-badge {
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: capitalize;
-  }
-  .status-badge.attente { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
-  .status-badge.confirmee, .status-badge.payee { background: rgba(40, 167, 69, 0.15); color: #28a745; }
-  .status-badge.en_cours { background: rgba(23, 162, 184, 0.15); color: #17a2b8; }
-  .status-badge.terminee { background: rgba(108, 117, 125, 0.15); color: #6c757d; }
-  .status-badge.annulee, .status-badge.impayee { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
-  
-  .lux-empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--lux-text-muted);
-  }
-  .lux-empty-state i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    display: block;
-  }
-  .lux-empty-state p {
-    margin-bottom: 1.5rem;
-  }
-  `],
+  `
 })
 export class ClientDashboardPageComponent {
   private readonly auth = inject(AuthService);

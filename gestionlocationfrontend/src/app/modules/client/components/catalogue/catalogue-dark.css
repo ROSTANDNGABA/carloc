@@ -80,7 +80,7 @@
 }
 
 .vehicle-image-wrap {
-  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%) !important;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
   border-bottom-color: #2a2a2a !important;
 }
 
@@ -100,6 +100,14 @@
 .category-tag {
   background: #1f2937 !important;
   color: #d1d5db !important;
+}
+
+/* Images véhicules - garantir visibilité sur fond sombre */
+.lux-vehicle-image {
+  object-fit: contain !important;
+  background: transparent !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5)) !important;
+  max-height: 160px !important;
 }
 
 /* Status Badges */
@@ -149,8 +157,12 @@
   color: #9ca3af !important;
 }
 
-/* Skeleton */
-.lux-skeleton-card {
+/* Images véhicules - visibilité garantie */
+.lux-vehicle-image {
+  object-fit: contain !important;
+  background: transparent !important;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) !important;
+}
   background: #111827 !important;
   border: 1px solid #1f2937 !important;
 }
@@ -196,12 +208,14 @@
 .vehicle-preview,
 .renter-card,
 .price-card {
-  background: #000000 !important;
-  border-color: #1f2937 !important;
+  background: #0d1117 !important;
+  border-color: #21262d !important;
 }
 
 .vehicle-preview img {
-  background: #1a1a1a !important;
+  background: #161b22 !important;
+  padding: 0.5rem !important;
+  object-fit: contain !important;
 }
 
 .renter-icon {

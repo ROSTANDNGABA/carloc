@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { finalize, switchMap } from 'rxjs';
 import { FactureService } from '@app/core/services/facture.service';
 import { extractApiError } from '@app/core/utils/api.util';
@@ -11,277 +12,170 @@ import { money, shortDate } from '@app/shared/formatters';
   standalone: true,
   imports: [CommonModule],
   template: `
-<div class="lux-page">
-  <div class="page-header">
-    <div class="header-left">
-      <h2>Mes Factures</h2>
-      <p>Consultez l'historique de vos paiements et téléchargez vos factures.</p>
-    </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+  <div>
+    <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Mes factures</h2>
+    <p class="text-gray-500 dark:text-gray-400 mt-1">Consultez vos factures, ouvrez le PDF en aperçu et suivez vos dépenses.</p>
   </div>
-  
+
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-700 dark:text-red-300 font-medium">
+      {{ error() }}
+    </div>
+  }
+  @if (message()) {
+    <div class="rounded-lg border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-green-700 dark:text-green-300 font-medium">
+      {{ message() }}
+    </div>
+  }
+
   @if (loading()) {
-    <div class="lux-skeleton-grid">
-      @for (i of [1,2,3]; track i) {
-        <div class="lux-skeleton-card" style="height: 100px;"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="h-28 rounded-lg bg-gray-100 dark:bg-carloc-900 animate-pulse"></div>
       }
     </div>
   } @else {
-    <div class="lux-metric-grid mb-4">
-      <div class="lux-metric-card">
-        <div class="metric-info">
-          <span class="metric-label">Total Payé</span>
-          <strong class="metric-value">{{ totalAmountLabel() }}</strong>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+      <section class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="rounded-lg bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 p-5">
+            <span class="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Total payé</span>
+            <strong class="block mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ totalAmountLabel() }}</strong>
+          </div>
+          <div class="rounded-lg bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 p-5">
+            <span class="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Factures payées</span>
+            <strong class="block mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ paidCount() }}</strong>
+          </div>
+          <div class="rounded-lg bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 p-5">
+            <span class="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">En attente</span>
+            <strong class="block mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ pendingCount() }}</strong>
+          </div>
         </div>
-      </div>
-      <div class="lux-metric-card">
-        <div class="metric-info">
-          <span class="metric-label">Factures Payées</span>
-          <strong class="metric-value">{{ paidCount() }}</strong>
-        </div>
-      </div>
-      <div class="lux-metric-card">
-        <div class="metric-info">
-          <span class="metric-label">En Attente</span>
-          <strong class="metric-value">{{ pendingCount() }}</strong>
-        </div>
-      </div>
-    </div>
-    
-    <div class="lux-panel">
-      <div class="panel-body">
+
         @if (factures().length) {
-          <table class="lux-table">
-            <thead>
-              <tr>
-                <th>Référence</th>
-                <th>Date</th>
-                <th>Réservation</th>
-                <th>Statut</th>
-                <th>Montant</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div class="rounded-lg bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 overflow-hidden">
+            <div class="divide-y divide-gray-100 dark:divide-carloc-800">
               @for (fac of factures(); track fac.id) {
-                <tr>
-                  <td><strong>FAC-{{ fac.id }}</strong></td>
-                  <td>{{ dateFmt(fac.date_emission) }}</td>
-                  <td>RES-{{ fac.reservation }}</td>
-                  <td><span class="status-badge" [class]="fac.statut">{{ fac.statut }}</span></td>
-                  <td><strong>{{ moneyFmt(fac.montant_total) }}</strong></td>
-                  <td>
-                    @if (fac.statut !== 'payee') {
-                      <button class="lux-btn lux-btn-primary btn-small" (click)="download(fac)">Télécharger</button>
-                    } @else {
-                      <button class="lux-btn lux-btn-outline btn-small" (click)="download(fac)">Télécharger</button>
-                    }
-                  </td>
-                </tr>
+                <article class="p-5 flex flex-col md:flex-row md:items-center gap-4 hover:bg-gray-50 dark:hover:bg-carloc-800/30 transition-colors">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <h3 class="font-black text-gray-900 dark:text-white">{{ fac.numero || ('FAC-' + fac.id) }}</h3>
+                      <span class="px-2.5 py-1 rounded-full text-xs font-black uppercase border" [ngClass]="statusClass(fac)">
+                        {{ fac.statut }}
+                      </span>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{{ fac.vehicule_info || ('Réservation #' + fac.reservation) }}</p>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <span>{{ dateFmt(fac.date_emission) }}</span>
+                      <span>{{ fac.categorie_vehicule || 'Catégorie non renseignée' }}</span>
+                      <span>RES-{{ fac.reservation }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between md:justify-end gap-4">
+                    <strong class="text-lg font-black text-gray-900 dark:text-white">{{ moneyFmt(fac.montant_total) }}</strong>
+                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold hover:bg-black dark:hover:bg-gray-200 transition-colors disabled:opacity-50" (click)="preview(fac)" [disabled]="working() === fac.id">
+                      @if (working() === fac.id) {
+                        <i class="bi bi-arrow-repeat animate-spin"></i>
+                      } @else {
+                        <i class="bi bi-eye"></i>
+                      }
+                      Voir
+                    </button>
+                  </div>
+                </article>
               }
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 dark:border-carloc-800 pt-5">
+            <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+              Page {{ page() }} sur {{ totalPages() }} · {{ count() }} facture(s)
+            </span>
+            <div class="flex items-center gap-2">
+              <button class="px-4 py-2 rounded-lg border border-gray-200 dark:border-carloc-700 font-bold text-gray-700 dark:text-gray-200 disabled:opacity-40" type="button" [disabled]="page() <= 1 || loading()" (click)="goToPage(page() - 1)">
+                Précédent
+              </button>
+              <button class="px-4 py-2 rounded-lg border border-gray-200 dark:border-carloc-700 font-bold text-gray-700 dark:text-gray-200 disabled:opacity-40" type="button" [disabled]="page() >= totalPages() || loading()" (click)="goToPage(page() + 1)">
+                Suivant
+              </button>
+            </div>
+          </div>
         } @else {
-          <div class="lux-empty-state">
-            <i class="bi bi-receipt"></i>
-            <h3>Aucune facture</h3>
-            <p>Vous n'avez pas encore de factures dans votre historique.</p>
+          <div class="rounded-lg border border-dashed border-gray-300 dark:border-carloc-700 bg-white dark:bg-carloc-900 p-10 text-center">
+            <i class="bi bi-receipt text-4xl text-gray-400"></i>
+            <h3 class="text-xl font-black text-gray-900 dark:text-white mt-4">Aucune facture</h3>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Vos factures apparaîtront ici après vos réservations.</p>
           </div>
         }
+      </section>
+
+      <aside class="rounded-lg bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 p-5 h-fit">
+        <h3 class="font-black text-gray-900 dark:text-white">Dépenses par catégorie</h3>
+        <div class="space-y-4 mt-5">
+          @for (row of expensesByCategory(); track row.category) {
+            <div>
+              <div class="flex items-center justify-between gap-3 text-sm">
+                <span class="font-bold text-gray-700 dark:text-gray-200 truncate">{{ row.category }}</span>
+                <strong class="text-gray-900 dark:text-white">{{ moneyFmt(row.total) }}</strong>
+              </div>
+              <div class="mt-2 h-2 rounded-full bg-gray-100 dark:bg-carloc-800 overflow-hidden">
+                <div class="h-full bg-carloc-900 dark:bg-white" [style.width.%]="row.percent"></div>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500 dark:text-gray-400">Aucune dépense à catégoriser.</p>
+          }
+        </div>
+      </aside>
+    </div>
+  }
+
+  @if (previewResourceUrl()) {
+    <div class="fixed inset-0 z-50 bg-carloc-950/80 backdrop-blur-sm p-4 flex items-center justify-center" (click)="closePreview()">
+      <div class="w-full max-w-5xl h-[88vh] rounded-lg overflow-hidden bg-white dark:bg-carloc-950 border border-gray-200 dark:border-carloc-800 shadow-2xl flex flex-col" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-carloc-800">
+          <strong class="text-gray-900 dark:text-white truncate">{{ previewTitle() }}</strong>
+          <button type="button" class="w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-carloc-800 text-gray-600 dark:text-gray-300" (click)="closePreview()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <iframe [src]="previewResourceUrl()" class="flex-1 w-full bg-white" title="Aperçu facture"></iframe>
       </div>
     </div>
   }
 </div>
   `,
-  styles: [`
-  .lux-page {
-    animation: fadeIn 0.4s ease;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-  .lux-page *,
-  .lux-page *::before,
-  .lux-page *::after {
-    box-sizing: border-box;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .page-header {
-    margin-bottom: 2.5rem;
-  }
-  .page-header h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    overflow-wrap: anywhere;
-  }
-  .page-header p {
-    color: var(--lux-text-muted);
-    overflow-wrap: anywhere;
-  }
-  .mb-4 {
-    margin-bottom: 2rem;
-  }
-  .lux-metric-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
-  .lux-metric-card {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    padding: 1.5rem;
-    box-shadow: var(--lux-shadow);
-    min-width: 0;
-  }
-  .metric-info {
-    display: flex;
-    flex-direction: column;
-  }
-  .metric-label {
-    font-size: 0.85rem;
-    color: var(--lux-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-  }
-  .metric-value {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--lux-accent);
-    overflow-wrap: anywhere;
-  }
-  .lux-panel {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    overflow: hidden;
-    max-width: 100%;
-  }
-  .panel-body {
-    padding: 1.5rem;
-    max-width: 100%;
-  }
-  .lux-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .lux-table th {
-    text-align: left;
-    color: var(--lux-text-muted);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--lux-border);
-  }
-  .lux-table td {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--lux-border);
-  }
-  .lux-table tr:last-child td {
-    border-bottom: none;
-  }
-  .status-badge {
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: capitalize;
-  }
-  .status-badge.attente { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
-  .status-badge.payee { background: rgba(40, 167, 69, 0.15); color: #28a745; }
-  .status-badge.impayee { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
-  .btn-small {
-    padding: 0.4rem 1rem;
-    font-size: 0.85rem;
-  }
-  .lux-empty-state {
-    text-align: center;
-    padding: 4rem;
-    color: var(--lux-text-muted);
-    max-width: 100%;
-  }
-  .lux-empty-state i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    display: block;
-  }
-  .lux-empty-state h3 {
-    color: var(--lux-heading);
-    margin-bottom: 0.5rem;
-  }
-  @media (max-width: 760px) {
-    .page-header {
-      margin-bottom: 1.5rem;
-    }
-
-    .page-header h2 {
-      font-size: 1.65rem;
-    }
-
-    .lux-metric-grid {
-      grid-template-columns: 1fr;
-      gap: 0.85rem;
-    }
-
-    .lux-metric-card {
-      padding: 1rem;
-    }
-
-    .metric-label {
-      font-size: 0.74rem;
-      letter-spacing: 0.04em;
-    }
-
-    .metric-value {
-      font-size: 1.45rem;
-    }
-
-    .panel-body {
-      padding: 1rem;
-    }
-
-    .lux-empty-state {
-      padding: 3rem 1rem;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .page-header h2 {
-      font-size: 1.45rem;
-    }
-
-    .page-header p {
-      font-size: 0.92rem;
-    }
-  }
-  `]
 })
 export class InvoicesPageComponent {
   private readonly facturesService = inject(FactureService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly factures = signal<Facture[]>([]);
   readonly loading = signal(true);
   readonly working = signal<number | null>(null);
   readonly error = signal('');
   readonly message = signal('');
+  readonly page = signal(1);
+  readonly count = signal(0);
+  readonly previewUrl = signal<string | null>(null);
+  readonly previewResourceUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewTitle = signal('Facture');
 
   readonly paidCount = computed(() => this.factures().filter(f => f.statut === 'payee').length);
   readonly pendingCount = computed(() => this.factures().filter(f => f.statut !== 'payee' && f.statut !== 'annulee').length);
-  readonly totalAmountLabel = computed(() => {
-    const factures = this.factures();
-    const seen = new Set<number>();
-    let total = 0;
-    for (const f of factures) {
-      if (!seen.has(f.reservation)) {
-        seen.add(f.reservation);
-        total += Number(f.reservation_total_paye || 0);
-      }
+  readonly totalAmountLabel = computed(() => this.moneyFmt(this.factures().reduce((sum, f) => sum + Number(f.reservation_total_paye || f.montant_total || 0), 0)));
+  readonly expensesByCategory = computed(() => {
+    const totals = new Map<string, number>();
+    for (const facture of this.factures()) {
+      const category = facture.categorie_vehicule || 'Autres';
+      totals.set(category, (totals.get(category) ?? 0) + Number(facture.montant_total || 0));
     }
-    return this.moneyFmt(total);
+    const max = Math.max(...totals.values(), 1);
+    return [...totals.entries()]
+      .map(([category, total]) => ({ category, total, percent: Math.max(6, Math.round((total / max) * 100)) }))
+      .sort((a, b) => b.total - a.total);
   });
 
   readonly moneyFmt = money;
@@ -291,21 +185,36 @@ export class InvoicesPageComponent {
     this.load();
   }
 
+  totalPages(): number {
+    return Math.max(1, Math.ceil(this.count() / 10));
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.page.set(page);
+    this.load();
+  }
+
   load(): void {
     this.loading.set(true);
+    this.error.set('');
     this.facturesService
-      .getFactures()
+      .getFacturesPage(this.page())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: factures => this.factures.set(factures),
+        next: response => {
+          this.factures.set(response.results ?? []);
+          this.count.set(response.count ?? 0);
+        },
         error: (err: unknown) => this.error.set(extractApiError(err)),
       });
   }
 
-  download(facture: Facture): void {
+  preview(facture: Facture): void {
     this.working.set(facture.id);
     this.error.set('');
     this.message.set('');
+    this.previewTitle.set(facture.numero || `Facture #${facture.id}`);
 
     const source = facture.fichier_pdf_url
       ? this.facturesService.downloadPdf(facture.id)
@@ -314,12 +223,32 @@ export class InvoicesPageComponent {
     source.pipe(finalize(() => this.working.set(null))).subscribe({
       next: blob => {
         if (typeof window === 'undefined') return;
+        this.revokePreviewUrl();
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank', 'noopener');
-        setTimeout(() => window.URL.revokeObjectURL(url), 10000);
-        this.message.set('PDF ouvert dans un nouvel onglet.');
+        this.previewUrl.set(url);
+        this.previewResourceUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
       },
       error: (err: unknown) => this.error.set(extractApiError(err)),
     });
+  }
+
+  closePreview(): void {
+    this.revokePreviewUrl();
+    this.previewUrl.set(null);
+    this.previewResourceUrl.set(null);
+  }
+
+  statusClass(facture: Facture): string {
+    if (facture.statut === 'payee') return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-900/40';
+    if (facture.statut === 'annulee') return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900/40';
+    if (facture.statut === 'brouillon') return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-900/40';
+    return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-900/40';
+  }
+
+  private revokePreviewUrl(): void {
+    const current = this.previewUrl();
+    if (current && typeof window !== 'undefined') {
+      window.URL.revokeObjectURL(current);
+    }
   }
 }

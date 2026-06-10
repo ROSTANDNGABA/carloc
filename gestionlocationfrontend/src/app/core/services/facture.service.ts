@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -13,6 +13,14 @@ export class FactureService {
   private apiUrl = `${environment.apiUrl}/factures/`;
 
   constructor(private http: HttpClient) {}
+
+  getFacturesPage(page = 1, search = ''): Observable<PaginatedResponse<Facture>> {
+    let params = new HttpParams().set('page', String(page));
+    if (search.trim()) {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<PaginatedResponse<Facture>>(this.apiUrl, { params });
+  }
 
   getFactures(): Observable<Facture[]> {
     return this.http

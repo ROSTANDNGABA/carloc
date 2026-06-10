@@ -15,6 +15,9 @@ export interface Reservation {
   prenom_client?: string;
   marque_vehicule?: string;
   modele_vehicule?: string;
+  categorie_vehicule?: string;
+  image_vehicule?: string | null;
+  image_vehicule_url?: string | null;
   immatriculation?: string;
   nb_jours?: number;
   montant_total?: number;

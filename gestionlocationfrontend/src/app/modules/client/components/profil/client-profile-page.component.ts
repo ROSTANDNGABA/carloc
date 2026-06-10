@@ -12,881 +12,348 @@ import { imageUrl } from '@app/shared/formatters';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="profile-page">
-      <div class="page-header">
-        <div class="header-left">
-          <h2>Mon Profil</h2>
-          <p>Gérez vos informations personnelles et vos documents.</p>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-4 animate-fade-in">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-gray-200 dark:border-carloc-800 pb-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Mon profil</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Informations personnelles et documents.</p>
         </div>
       </div>
 
-      <div class="profile-container">
+      <div class="w-full">
         @if (loading()) {
-          <div class="loading-state">
-            <div class="loading-spinner"></div>
-            Chargement du profil...
+          <div class="flex flex-col items-center justify-center p-12 py-24 text-gray-500 dark:text-gray-400 gap-4">
+            <i class="bi bi-arrow-repeat animate-spin text-4xl"></i>
+            <span class="font-semibold text-lg">Chargement du profil...</span>
           </div>
         } @else if (client(); as c) {
-          <div class="profile-card">
-            <div class="profile-header">
-              <div class="profile-avatar-wrapper">
+          <div class="bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 rounded-xl overflow-hidden shadow-sm">
+            
+            <!-- Profile Header Card -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 p-4 sm:p-5 border-b border-gray-200 dark:border-carloc-800 bg-gray-50/50 dark:bg-carloc-900/50 relative">
+              <div class="relative w-20 h-20 rounded-full border-4 border-white dark:border-carloc-800 shadow-md overflow-hidden bg-gray-100 dark:bg-carloc-800 shrink-0">
                 <img
                   [src]="avatar(c)"
                   alt="Photo de profil"
-                  class="avatar-img"
+                  class="w-full h-full object-cover"
                   (error)="onAvatarError($event)"
                 />
                 @if (editing()) {
-                  <div class="avatar-overlay">
-                    <i class="bi bi-camera" aria-hidden="true"></i>
+                  <div class="absolute inset-0 bg-carloc-950/60 flex items-center justify-center cursor-pointer transition-colors hover:bg-carloc-950/70">
+                    <i class="bi bi-camera text-white text-3xl"></i>
                   </div>
                 }
               </div>
-              <div class="profile-header-info">
-                <h3>{{ c.prenom }} {{ c.nom }}</h3>
-                <span class="client-badge">Compte Client</span>
+              
+              <div class="flex-1 text-center sm:text-left min-w-0">
+                <h3 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mb-2 truncate">{{ c.prenom }} {{ c.nom }}</h3>
+                <span class="inline-block px-3 py-1 bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 text-xs font-bold rounded-full tracking-wide">COMPTE CLIENT</span>
               </div>
+
               @if (!editing()) {
                 <button
-                  class="btn btn-primary"
                   type="button"
                   (click)="toggleEdit()"
-                  style="margin-left: auto;"
+                  class="mt-3 sm:mt-0 px-4 py-2.5 bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold rounded-lg hover:bg-carloc-800 dark:hover:bg-gray-200 transition-all shadow-md flex items-center gap-2"
                 >
-                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                  Modifier mon profil
+                  <i class="bi bi-pencil-square"></i>
+                  Modifier
                 </button>
               }
             </div>
 
+            <!-- Profile Form (Edit Mode) -->
             @if (editing()) {
-              <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+              <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="p-4 sm:p-5 space-y-5">
+                
                 @if (error()) {
-                  <div class="alert alert-error">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-                    {{ error() }}
+                  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl flex items-center gap-3">
+                    <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+                    <span class="font-medium">{{ error() }}</span>
                   </div>
                 }
                 @if (message()) {
-                  <div class="alert alert-success">
-                    <i class="bi bi-check-circle" aria-hidden="true"></i>
-                    {{ message() }}
+                  <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 text-green-700 dark:text-green-400 px-6 py-4 rounded-xl flex items-center gap-3">
+                    <i class="bi bi-check-circle-fill text-xl"></i>
+                    <span class="font-medium">{{ message() }}</span>
                   </div>
                 }
 
-                <div class="form-section">
-                  <div class="section-header">
-                    <i class="bi bi-person" aria-hidden="true"></i>
-                    <h4>Informations Personnelles</h4>
+                <!-- Informations Personnelles -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-person text-lg"></i>
+                    </div>
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Informations personnelles</h4>
                   </div>
-                  <div class="form-grid">
-                    <div class="form-group">
-                      <label for="prenom">
-                        <i class="bi bi-person-fill" aria-hidden="true"></i>
-                        Prénom
-                      </label>
-                      <input type="text" id="prenom" formControlName="prenom" class="form-control" placeholder="Votre prénom" />
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Prénom -->
+                    <div class="space-y-2">
+                      <label for="prenom" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Prénom</label>
+                      <input type="text" id="prenom" formControlName="prenom" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Votre prénom" />
                       @if (profileForm.get('prenom')?.touched && profileForm.get('prenom')?.invalid) {
-                        <div class="form-error">
-                          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                          Prénom obligatoire
-                        </div>
+                        <span class="text-red-500 dark:text-red-400 text-xs font-semibold mt-1 block">Prénom obligatoire</span>
                       }
                     </div>
-                    <div class="form-group">
-                      <label for="nom">
-                        <i class="bi bi-person-badge" aria-hidden="true"></i>
-                        Nom
-                      </label>
-                      <input type="text" id="nom" formControlName="nom" class="form-control" placeholder="Votre nom" />
+                    <!-- Nom -->
+                    <div class="space-y-2">
+                      <label for="nom" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Nom</label>
+                      <input type="text" id="nom" formControlName="nom" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Votre nom" />
                       @if (profileForm.get('nom')?.touched && profileForm.get('nom')?.invalid) {
-                        <div class="form-error">
-                          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                          Nom obligatoire
-                        </div>
+                        <span class="text-red-500 dark:text-red-400 text-xs font-semibold mt-1 block">Nom obligatoire</span>
                       }
                     </div>
-                    <div class="form-group">
-                      <label for="email">
-                        <i class="bi bi-envelope" aria-hidden="true"></i>
-                        Email
-                      </label>
-                      <input type="email" id="email" formControlName="email" class="form-control" placeholder="Votre email" />
+                    <!-- Email -->
+                    <div class="space-y-2">
+                      <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Email</label>
+                      <input type="email" id="email" formControlName="email" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Votre email" />
                       @if (profileForm.get('email')?.touched && profileForm.get('email')?.invalid) {
-                        <div class="form-error">
-                          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                          Email valide obligatoire
-                        </div>
+                        <span class="text-red-500 dark:text-red-400 text-xs font-semibold mt-1 block">Email valide obligatoire</span>
                       }
                     </div>
-                    <div class="form-group">
-                      <label for="telephone">
-                        <i class="bi bi-telephone" aria-hidden="true"></i>
-                        Téléphone
-                      </label>
-                      <input type="text" id="telephone" formControlName="telephone" class="form-control" placeholder="Votre numéro de téléphone" />
+                    <!-- Téléphone -->
+                    <div class="space-y-2">
+                      <label for="telephone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Téléphone</label>
+                      <input type="text" id="telephone" formControlName="telephone" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Votre numéro" />
                       @if (profileForm.get('telephone')?.touched && profileForm.get('telephone')?.invalid) {
-                        <div class="form-error">
-                          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                          Téléphone obligatoire
-                        </div>
+                        <span class="text-red-500 dark:text-red-400 text-xs font-semibold mt-1 block">Téléphone obligatoire</span>
                       }
                     </div>
-                    <div class="form-group full-width">
-                      <label for="adresse">
-                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
-                        Adresse
-                      </label>
-                      <input type="text" id="adresse" formControlName="adresse" class="form-control" placeholder="Votre adresse complète" />
+                    <!-- Adresse -->
+                    <div class="space-y-2 md:col-span-2">
+                      <label for="adresse" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Adresse</label>
+                      <input type="text" id="adresse" formControlName="adresse" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600" placeholder="Votre adresse complète" />
                     </div>
-                    <div class="form-group">
-                      <label for="num_cni">
-                        <i class="bi bi-card-text" aria-hidden="true"></i>
-                        Numéro CNI
-                      </label>
-                      <input type="text" id="num_cni" formControlName="num_cni" class="form-control" placeholder="Numéro de carte nationale d'identité" />
+                    <!-- CNI -->
+                    <div class="space-y-2">
+                      <label for="num_cni" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Numéro CNI</label>
+                      <input type="text" id="num_cni" formControlName="num_cni" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 uppercase" placeholder="Numéro de carte d'identité" />
                     </div>
-                    <div class="form-group">
-                      <label for="num_permis">
-                        <i class="bi bi-award" aria-hidden="true"></i>
-                        Numéro de Permis
-                      </label>
-                      <input type="text" id="num_permis" formControlName="num_permis" class="form-control" placeholder="Numéro de permis de conduire" />
+                    <!-- Permis -->
+                    <div class="space-y-2">
+                      <label for="num_permis" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Numéro de Permis</label>
+                      <input type="text" id="num_permis" formControlName="num_permis" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 uppercase" placeholder="Numéro de permis" />
                       @if (profileForm.get('num_permis')?.touched && profileForm.get('num_permis')?.invalid) {
-                        <div class="form-error">
-                          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                          Numéro de permis obligatoire
-                        </div>
+                        <span class="text-red-500 dark:text-red-400 text-xs font-semibold mt-1 block">Numéro de permis obligatoire</span>
                       }
                     </div>
                   </div>
                 </div>
 
-                <div class="form-section">
-                  <div class="section-header">
-                    <i class="bi bi-lock" aria-hidden="true"></i>
-                    <h4>Sécurité</h4>
-                  </div>
-                  <div class="form-grid">
-                    <div class="form-group">
-                      <label for="mot_de_passe">
-                        <i class="bi bi-key" aria-hidden="true"></i>
-                        Nouveau Mot de passe (optionnel)
-                      </label>
-                      <input type="password" id="mot_de_passe" formControlName="mot_de_passe" class="form-control" placeholder="••••••••" />
+                <!-- Sécurité -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-shield-lock text-lg"></i>
                     </div>
-                    <div class="form-group">
-                      <label for="confirmation_mot_de_passe">
-                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
-                        Confirmer le mot de passe
-                      </label>
-                      <input type="password" id="confirmation_mot_de_passe" formControlName="confirmation_mot_de_passe" class="form-control" placeholder="••••••••" />
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Sécurité</h4>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <label for="mot_de_passe" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Nouveau Mot de passe (optionnel)</label>
+                      <input type="password" id="mot_de_passe" formControlName="mot_de_passe" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 tracking-widest" placeholder="••••••••" />
+                    </div>
+                    <div class="space-y-2">
+                      <label for="confirmation_mot_de_passe" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Confirmer le mot de passe</label>
+                      <input type="password" id="confirmation_mot_de_passe" formControlName="confirmation_mot_de_passe" class="w-full bg-gray-50 dark:bg-carloc-800/50 border border-gray-300 dark:border-carloc-700 text-gray-900 dark:text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-carloc-900 dark:focus:border-white focus:ring-1 focus:ring-carloc-900 dark:focus:ring-white transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 tracking-widest" placeholder="••••••••" />
                     </div>
                   </div>
                 </div>
 
-                <div class="form-section">
-                  <div class="section-header">
-                    <i class="bi bi-image" aria-hidden="true"></i>
-                    <h4>Photo de Profil</h4>
-                  </div>
-                  <div class="file-upload-wrapper">
-                    <div class="file-upload-area">
-                      <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
-                      <p class="upload-text">
-                        Glissez et déposez votre image ici
-                      </p>
-                      <p class="upload-subtext">
-                        ou cliquez pour parcourir
-                      </p>
-                      <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" />
+                <!-- Photo de Profil -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-image text-lg"></i>
                     </div>
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Photo de profil</h4>
+                  </div>
+                  
+                  <div class="w-full">
+                    <div class="relative border-2 border-dashed border-gray-300 dark:border-carloc-700 rounded-xl p-6 text-center bg-gray-50/50 dark:bg-carloc-800/30 hover:border-carloc-500 dark:hover:border-gray-500 transition-colors group cursor-pointer">
+                      <i class="bi bi-cloud-arrow-up text-3xl text-gray-400 dark:text-gray-500 group-hover:text-carloc-500 dark:group-hover:text-gray-300 transition-colors mb-2 block"></i>
+                      <p class="font-bold text-gray-700 dark:text-gray-300 mb-1">Glissez et déposez votre image ici</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-500">ou cliquez pour parcourir</p>
+                      <input type="file" (change)="onFileSelected($event)" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    </div>
+
                     @if (selectedPhoto()) {
-                      <div class="file-info">
-                        <i class="bi bi-file-earmark-image" aria-hidden="true"></i>
-                        <span>{{ selectedPhoto()?.name }}</span>
-                        <button type="button" class="remove-file-btn" (click)="removeFile()">
-                          <i class="bi bi-x" aria-hidden="true"></i>
+                      <div class="mt-4 flex items-center justify-between p-4 bg-gray-50 dark:bg-carloc-800 rounded-xl border border-gray-200 dark:border-carloc-700">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                          <i class="bi bi-file-earmark-image text-xl text-gray-500 dark:text-gray-400 shrink-0"></i>
+                          <span class="font-semibold text-gray-700 dark:text-gray-300 truncate">{{ selectedPhoto()?.name }}</span>
+                        </div>
+                        <button type="button" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0" (click)="removeFile()">
+                          <i class="bi bi-x-lg text-lg"></i>
                         </button>
                       </div>
                     }
                   </div>
                 </div>
 
-                <div class="form-actions">
-                  <button type="button" class="btn btn-secondary" (click)="toggleEdit()">
-                    <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    Annuler
-                  </button>
-                  <button type="submit" class="btn btn-primary" [disabled]="saving()">
-                    @if (saving()) {
-                      <div class="spinner"></div>
-                      Sauvegarde en cours...
-                    } @else {
-                      <i class="bi bi-check-circle" aria-hidden="true"></i>
-                      Sauvegarder
-                    }
-                  </button>
-                </div>
-              </form>
-            } @else {
-              <div class="profile-details">
-                <div class="detail-section-title">
-                  <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
-                  Informations de contact
-                </div>
-                <div class="details-grid">
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-envelope" aria-hidden="true"></i>
+                <!-- Documents -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-file-earmark-text text-lg"></i>
                     </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Email</span>
-                      <span class="detail-value">{{ c.email }}</span>
-                    </div>
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Documents officiels</h4>
                   </div>
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-telephone" aria-hidden="true"></i>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="rounded-xl border border-dashed border-gray-300 dark:border-carloc-700 bg-gray-50/50 dark:bg-carloc-800/30 p-4 relative">
+                      <i class="bi bi-award text-2xl text-gray-400 dark:text-gray-500"></i>
+                      <p class="font-bold text-gray-900 dark:text-white mt-3">Permis de conduire</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ c.permis_conduire ? 'Document déjà enregistré' : 'Ajoutez une image ou un PDF' }}</p>
+                      <input type="file" (change)="onDocumentSelected($event, 'permis')" accept="application/pdf,image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      @if (selectedPermis()) {
+                        <div class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-700 p-3">
+                          <span class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{{ selectedPermis()?.name }}</span>
+                          <button type="button" class="text-red-500 shrink-0" (click)="removeDocument('permis')"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                      }
                     </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Téléphone</span>
-                      <span class="detail-value">{{ c.telephone }}</span>
-                    </div>
-                  </div>
-                  <div class="detail-card full-width">
-                    <div class="detail-icon">
-                      <i class="bi bi-geo-alt" aria-hidden="true"></i>
-                    </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Adresse</span>
-                      <span class="detail-value">{{ c.adresse || 'Non renseignée' }}</span>
+
+                    <div class="rounded-xl border border-dashed border-gray-300 dark:border-carloc-700 bg-gray-50/50 dark:bg-carloc-800/30 p-4 relative">
+                      <i class="bi bi-card-heading text-2xl text-gray-400 dark:text-gray-500"></i>
+                      <p class="font-bold text-gray-900 dark:text-white mt-3">Pièce d'identité</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ c.piece_identite ? 'Document déjà enregistré' : 'Ajoutez une image ou un PDF' }}</p>
+                      <input type="file" (change)="onDocumentSelected($event, 'identite')" accept="application/pdf,image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      @if (selectedIdentite()) {
+                        <div class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-700 p-3">
+                          <span class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{{ selectedIdentite()?.name }}</span>
+                          <button type="button" class="text-red-500 shrink-0" (click)="removeDocument('identite')"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                      }
                     </div>
                   </div>
                 </div>
 
-                <div class="detail-section-title" style="margin-top: 2rem;">
-                  <i class="bi bi-card-heading" aria-hidden="true"></i>
-                  Documents officiels
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-100 dark:border-carloc-800">
+                  <button type="button" class="px-5 py-2.5 border border-gray-300 dark:border-carloc-700 text-gray-700 dark:text-gray-300 font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-carloc-800 transition-colors" (click)="cancelEdit()">
+                    Annuler
+                  </button>
+                  <button type="submit" class="px-6 py-2.5 bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold rounded-lg hover:bg-carloc-800 dark:hover:bg-gray-200 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" [disabled]="saving()">
+                    @if (saving()) {
+                      <i class="bi bi-arrow-repeat animate-spin text-lg"></i>
+                      Sauvegarde...
+                    } @else {
+                      <i class="bi bi-check-lg text-lg"></i>
+                      Enregistrer
+                    }
+                  </button>
                 </div>
-                <div class="details-grid">
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-card-text" aria-hidden="true"></i>
+              </form>
+            } 
+            
+            <!-- Profile Details (View Mode) -->
+            @else {
+              <div class="p-4 sm:p-5 space-y-5">
+                
+                <!-- Contact Info -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-person-lines-fill text-lg"></i>
                     </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Numéro CNI</span>
-                      <span class="detail-value">{{ c.num_cni || 'Non renseigné' }}</span>
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Informations de contact</h4>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-envelope"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Email</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 truncate">{{ c.email }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-telephone"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Téléphone</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 truncate">{{ c.telephone }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-geo-alt"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Adresse</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 truncate">{{ c.adresse || 'Non renseignée' }}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-file-earmark-check"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Permis de conduire</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 truncate">{{ c.permis_conduire ? 'Document enregistré' : 'Non renseigné' }}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-file-earmark-person"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Pièce d'identité</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 truncate">{{ c.piece_identite ? 'Document enregistré' : 'Non renseignée' }}</span>
+                      </div>
                     </div>
                   </div>
-                  <div class="detail-card">
-                    <div class="detail-icon">
-                      <i class="bi bi-award" aria-hidden="true"></i>
+                </div>
+
+                <!-- Documents -->
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3 border-b border-gray-100 dark:border-carloc-800 pb-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-carloc-800 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                      <i class="bi bi-card-heading text-lg"></i>
                     </div>
-                    <div class="detail-content">
-                      <span class="detail-label">Numéro de Permis</span>
-                      <span class="detail-value">{{ c.num_permis }}</span>
+                    <h4 class="text-base font-bold text-gray-900 dark:text-white">Documents officiels</h4>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-card-text"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Numéro CNI</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 uppercase truncate">{{ c.num_cni || 'Non renseigné' }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3 p-3.5 rounded-lg bg-gray-50/50 dark:bg-carloc-800/30 border border-gray-100 dark:border-carloc-800">
+                      <div class="w-9 h-9 rounded-lg bg-white dark:bg-carloc-800 shadow-sm flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0 border border-gray-100 dark:border-carloc-700">
+                        <i class="bi bi-award"></i>
+                      </div>
+                      <div class="min-w-0">
+                        <span class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Numéro de Permis</span>
+                        <span class="block font-semibold text-gray-900 dark:text-gray-200 uppercase truncate">{{ c.num_permis }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
+
               </div>
             }
           </div>
         }
       </div>
     </div>
-  `,
-  styles: [`
-    .profile-page {
-      padding: 2rem;
-      width: 100%;
-      max-width: 1100px;
-      margin: 0 auto;
-      color: var(--lux-text);
-      box-sizing: border-box;
-      overflow-x: hidden;
-    }
-
-    .profile-page *,
-    .profile-page *::before,
-    .profile-page *::after {
-      box-sizing: border-box;
-    }
-
-    .page-header {
-      margin-bottom: 2rem;
-    }
-
-    .page-header h2 {
-      font-size: 2rem;
-      margin: 0 0 0.5rem 0;
-      color: var(--lux-heading);
-      font-weight: 700;
-    }
-
-    .page-header p {
-      margin: 0;
-      color: var(--lux-text-muted);
-      font-size: 1rem;
-    }
-
-    .profile-container {
-      width: 100%;
-    }
-
-    .loading-state {
-      text-align: center;
-      padding: 5rem 2rem;
-      color: var(--lux-text-muted);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--lux-border);
-      border-top-color: var(--lux-accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .profile-card {
-      background: var(--lux-surface);
-      border-radius: 16px;
-      border: 1px solid var(--lux-border);
-      box-shadow: var(--lux-shadow);
-      overflow: hidden;
-      max-width: 100%;
-    }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2.5rem;
-      border-bottom: 1px solid var(--lux-border);
-      background: linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, var(--lux-surface) 100%);
-    }
-
-    .profile-avatar-wrapper {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 4px solid var(--lux-surface);
-      box-shadow: var(--lux-shadow);
-    }
-
-    .avatar-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .avatar-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .avatar-overlay:hover {
-      background: rgba(0, 0, 0, 0.7);
-    }
-
-    .avatar-overlay i {
-      font-size: 2rem;
-      color: #ffffff;
-    }
-
-    .profile-header-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .profile-header-info h3 {
-      margin: 0 0 0.75rem 0;
-      font-size: 1.75rem;
-      color: var(--lux-heading);
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-
-    .profile-email,
-    .profile-phone {
-      margin: 0.25rem 0;
-      color: var(--lux-text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .btn-edit {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.85rem 1.5rem;
-      border: 1px solid var(--lux-border);
-      border-radius: 12px;
-      background: var(--lux-surface);
-      color: var(--lux-text);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-edit:hover {
-      background: var(--lux-surface-alt);
-      border-color: var(--lux-accent);
-      transform: translateY(-2px);
-      box-shadow: var(--lux-shadow);
-    }
-
-    .profile-details {
-      padding: 2.5rem;
-    }
-
-    .details-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.25rem;
-    }
-
-    .detail-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.25rem;
-      min-width: 0;
-      background: rgba(30, 64, 175, 0.03);
-      border-radius: 12px;
-      border: 1px solid var(--lux-border);
-      transition: all 0.3s ease;
-    }
-
-    .detail-card:hover {
-      background: rgba(30, 64, 175, 0.05);
-      transform: translateY(-2px);
-    }
-
-    .detail-card.full-width {
-      grid-column: 1 / -1;
-    }
-
-    .detail-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 64, 175, 0.05) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--lux-accent);
-      font-size: 1.25rem;
-      flex: 0 0 48px;
-    }
-
-    .detail-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      min-width: 0;
-    }
-
-    .detail-label {
-      font-size: 0.8rem;
-      color: var(--lux-text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .detail-value {
-      font-size: 1rem;
-      color: var(--lux-text);
-      font-weight: 600;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .profile-form {
-      padding: 2.5rem;
-    }
-
-    .form-section {
-      margin-bottom: 2.5rem;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid var(--lux-border);
-    }
-
-    .form-section:last-of-type {
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.75rem;
-    }
-
-    .section-header i {
-      font-size: 1.25rem;
-      color: var(--lux-heading);
-    }
-
-    .section-header h4 {
-      margin: 0;
-      font-size: 1.2rem;
-      color: var(--lux-heading);
-      font-weight: 700;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.5rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      min-width: 0;
-    }
-
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-
-    .form-group label {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--lux-heading);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-group label i {
-      font-size: 0.95rem;
-      color: var(--lux-text-muted);
-    }
-
-    .form-control {
-      padding: 0.95rem 1.25rem;
-      border: 1px solid var(--lux-border);
-      border-radius: 12px;
-      font-size: 1rem;
-      background: var(--lux-bg);
-      color: var(--lux-text);
-      transition: all 0.3s ease;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--lux-accent);
-      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
-      background: var(--lux-bg);
-    }
-
-    .form-error {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      color: #ff6b6b;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .file-upload-wrapper {
-      width: 100%;
-    }
-
-    .file-upload-area {
-      position: relative;
-      padding: 3rem 2rem;
-      border: 2px dashed var(--lux-border);
-      border-radius: 16px;
-      background: var(--lux-surface-alt);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .file-upload-area:hover {
-      border-color: var(--lux-accent);
-      background: var(--lux-surface);
-    }
-
-    .file-upload-area i {
-      font-size: 3rem;
-      color: var(--lux-text-muted);
-    }
-
-    .upload-text {
-      margin: 0;
-      color: var(--lux-heading);
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .upload-subtext {
-      margin: 0;
-      color: var(--lux-text-muted);
-      font-size: 0.9rem;
-    }
-
-    .file-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1rem;
-      padding: 1rem 1.25rem;
-      background: var(--lux-surface-alt);
-      border-radius: 12px;
-      border: 1px solid var(--lux-border);
-    }
-
-    .file-info i {
-      font-size: 1.25rem;
-      color: var(--lux-text);
-    }
-
-    .file-info span {
-      flex: 1;
-      min-width: 0;
-      color: var(--lux-text);
-      font-weight: 600;
-      font-size: 0.95rem;
-      overflow-wrap: anywhere;
-    }
-
-    .remove-file-btn {
-      padding: 0.5rem;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255, 107, 107, 0.1);
-      color: #ff6b6b;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .remove-file-btn:hover {
-      background: rgba(255, 107, 107, 0.2);
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2.5rem;
-    }
-
-    .btn {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.95rem 2rem;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .btn-secondary {
-      border: 1px solid var(--lux-border);
-      background: var(--lux-surface);
-      color: var(--lux-text);
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: var(--lux-surface-alt);
-      transform: translateY(-2px);
-    }
-
-    .btn-primary {
-      border: none;
-      background: var(--lux-accent);
-      color: #000000;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.1);
-      transform: translateY(-2px);
-      box-shadow: var(--lux-shadow);
-    }
-
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--lux-border);
-      border-top-color: var(--lux-accent);
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-
-    .alert {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1.25rem 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 2rem;
-    }
-
-    .alert i {
-      font-size: 1.25rem;
-    }
-
-    .alert-error {
-      background: rgba(255, 107, 107, 0.1);
-      color: #ff6b6b;
-      border: 1px solid rgba(255, 107, 107, 0.2);
-    }
-
-    .alert-success {
-      background: rgba(72, 187, 120, 0.1);
-      color: #48bb78;
-      border: 1px solid rgba(72, 187, 120, 0.2);
-    }
-
-    @media (max-width: 768px) {
-      .profile-page {
-        padding: 0.75rem;
-      }
-
-      .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-      }
-
-      .profile-header-info {
-        text-align: center;
-      }
-
-      .profile-header-info h3 {
-        font-size: 1.5rem;
-      }
-
-      .form-grid,
-      .details-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-actions {
-        flex-direction: column;
-      }
-
-      .form-actions .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .profile-form,
-      .profile-details {
-        padding: 1rem;
-      }
-
-      .profile-header {
-        padding: 1.5rem 1rem;
-      }
-
-      .detail-card {
-        align-items: flex-start;
-        padding: 1rem;
-      }
-
-      .detail-icon {
-        width: 42px;
-        height: 42px;
-        flex-basis: 42px;
-      }
-
-      .file-upload-area {
-        padding: 2rem 1rem;
-      }
-    }
-
-    @media (max-width: 420px) {
-      .profile-page {
-        padding: 0.5rem;
-      }
-
-      .page-header h2 {
-        font-size: 1.55rem;
-      }
-
-      .profile-card {
-        border-radius: 12px;
-      }
-
-      .profile-avatar-wrapper {
-        width: 92px;
-        height: 92px;
-      }
-
-      .profile-header-info h3 {
-        font-size: 1.25rem;
-      }
-
-      .detail-card {
-        gap: 0.75rem;
-      }
-
-      .detail-label {
-        font-size: 0.72rem;
-      }
-
-      .detail-value {
-        font-size: 0.95rem;
-      }
-    }
-  `]
+  `
 })
 export class ClientProfilePageComponent implements OnInit {
   private readonly fb = inject(FormBuilder).nonNullable;
@@ -899,6 +366,8 @@ export class ClientProfilePageComponent implements OnInit {
   readonly client = signal<Client | null>(null);
   readonly editing = signal(false);
   readonly selectedPhoto = signal<File | null>(null);
+  readonly selectedPermis = signal<File | null>(null);
+  readonly selectedIdentite = signal<File | null>(null);
   readonly avatarVersion = signal<number | null>(null);
 
   readonly profileForm = this.fb.group({
@@ -966,6 +435,14 @@ export class ClientProfilePageComponent implements OnInit {
     if (photo) {
       payload.append('photo_profil', photo);
     }
+    const permis = this.selectedPermis();
+    if (permis) {
+      payload.append('permis_conduire', permis);
+    }
+    const identite = this.selectedIdentite();
+    if (identite) {
+      payload.append('piece_identite', identite);
+    }
     this.clients
       .updateClient(client.id, payload)
       .pipe(finalize(() => this.saving.set(false)))
@@ -979,6 +456,8 @@ export class ClientProfilePageComponent implements OnInit {
           this.patchForm(updated);
           this.profileForm.patchValue({ mot_de_passe: '', confirmation_mot_de_passe: '' });
           this.selectedPhoto.set(null);
+          this.selectedPermis.set(null);
+          this.selectedIdentite.set(null);
           this.editing.set(false);
           this.message.set('Profil mis à jour avec succès !');
 
@@ -1025,12 +504,32 @@ export class ClientProfilePageComponent implements OnInit {
     this.selectedPhoto.set(null);
   }
 
+  onDocumentSelected(event: Event, type: 'permis' | 'identite'): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (type === 'permis') {
+      this.selectedPermis.set(file);
+    } else {
+      this.selectedIdentite.set(file);
+    }
+  }
+
+  removeDocument(type: 'permis' | 'identite'): void {
+    if (type === 'permis') {
+      this.selectedPermis.set(null);
+    } else {
+      this.selectedIdentite.set(null);
+    }
+  }
+
   cancelEdit(): void {
     const client = this.client();
     if (client) {
       this.patchForm(client);
     }
     this.selectedPhoto.set(null);
+    this.selectedPermis.set(null);
+    this.selectedIdentite.set(null);
     this.error.set('');
     this.message.set('');
     this.editing.set(false);

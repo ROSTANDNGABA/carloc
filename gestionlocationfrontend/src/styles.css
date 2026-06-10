@@ -10,20 +10,20 @@
 @layer components {
   /* Buttons */
   .btn-carloc {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-gradient-to-r from-carloc-600 to-carloc-500 hover:from-carloc-700 hover:to-carloc-600 transition-all duration-300 shadow-carloc hover:shadow-carloc-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-carloc-900 hover:bg-carloc-800 transition-all duration-300 shadow-carloc hover:shadow-carloc-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed border border-carloc-700;
   }
   
   .btn-carloc-outline {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold text-carloc-600 border-2 border-carloc-600 hover:bg-carloc-50 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-carloc-900 border-2 border-carloc-900 hover:bg-carloc-50 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0;
   }
   
   .btn-carloc-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-gray-700 hover:bg-gray-100 transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-100 transition-all duration-200;
   }
 
   /* Cards */
   .card-carloc {
-    @apply bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-carloc-300 hover:-translate-y-1;
+    @apply bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-carloc-900 hover:-translate-y-1;
   }
   
   .card-carloc-flat {
@@ -32,36 +32,36 @@
 
   /* Input Fields */
   .input-carloc {
-    @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-carloc-500 focus:ring-4 focus:ring-carloc-100 outline-none transition-all duration-200 placeholder:text-gray-400;
+    @apply w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-carloc-900 focus:ring-1 focus:ring-carloc-900 outline-none transition-all duration-200 placeholder:text-gray-400 bg-gray-50 focus:bg-white;
   }
   
   .select-carloc {
-    @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-carloc-500 focus:ring-4 focus:ring-carloc-100 outline-none transition-all duration-200 bg-white cursor-pointer;
+    @apply w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-carloc-900 focus:ring-1 focus:ring-carloc-900 outline-none transition-all duration-200 bg-gray-50 focus:bg-white cursor-pointer;
   }
 
   /* Status Badges */
   .badge-available {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200;
   }
   
   .badge-rented {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-carloc-50 text-carloc-700 border border-carloc-200;
   }
   
   .badge-maintenance {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200;
   }
   
   .badge-pending {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200;
   }
   
   .badge-confirmed {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200;
   }
   
   .badge-cancelled {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200;
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200;
   }
 
   /* Animations */

@@ -7,9 +7,9 @@ import { extractApiError } from '@app/core/utils/api.util';
 import { Reservation } from '@app/models/reservation.model';
 import {
   canCancelReservation,
+  imageUrl,
   money,
   reservationStatusLabel,
-  reservationStatusTone,
   shortDate,
 } from '@app/shared/formatters';
 
@@ -19,180 +19,118 @@ import {
   imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-<div class="lux-page">
-  <div class="page-header">
-    <div class="header-left">
-      <h2>Mes réservations</h2>
-      <p>Suivez vos locations, montants et annulations.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div>
+      <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Mes réservations</h2>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Suivez vos locations, paiements et annulations.</p>
     </div>
-    <a routerLink="/catalogue" class="lux-btn lux-btn-primary">Nouvelle réservation</a>
+    <a routerLink="/catalogue" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold rounded-lg hover:bg-black dark:hover:bg-gray-200 transition-colors">
+      <i class="bi bi-plus-lg"></i>
+      Nouvelle réservation
+    </a>
   </div>
 
   @if (error()) {
-    <div class="lux-alert lux-alert-error">{{ error() }}</div>
+    <div class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-700 dark:text-red-300 font-medium">
+      {{ error() }}
+    </div>
   }
   @if (message()) {
-    <div class="lux-alert lux-alert-success">{{ message() }}</div>
+    <div class="rounded-lg border border-green-200 dark:border-green-900/40 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-green-700 dark:text-green-300 font-medium">
+      {{ message() }}
+    </div>
   }
 
   @if (loading()) {
-    <div class="lux-skeleton-grid">
-      @for (i of [1, 2, 3]; track i) {
-        <div class="lux-skeleton-card" style="height: 150px;"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="h-96 rounded-lg bg-gray-100 dark:bg-carloc-900 animate-pulse"></div>
       }
     </div>
-  } @else {
-    <div class="reservations-list">
+  } @else if (reservations().length) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
       @for (res of reservations(); track res.id) {
-        <article class="lux-reservation-card">
-          <div class="res-details">
-            <div class="res-header">
-              <span class="status-badge" [ngClass]="statusTone(res)">{{ statusLabel(res) }}</span>
-              <h3>{{ vehicleLabel(res) }}</h3>
-              <p class="plate">{{ res.immatriculation || '—' }}</p>
-            </div>
-            <div class="res-body">
-              <div class="res-info-item">
-                <i class="bi bi-calendar" aria-hidden="true"></i>
-                <div>
-                  <span class="label">Période</span>
-                  <span class="value">{{ dateFmt(res.date_debut) }} → {{ dateFmt(res.date_fin) }}</span>
-                </div>
-              </div>
-              <div class="res-info-item">
-                <i class="bi bi-clock" aria-hidden="true"></i>
-                <div>
-                  <span class="label">Durée</span>
-                  <span class="value">{{ res.nb_jours ?? '—' }} jour(s)</span>
-                </div>
-              </div>
-              <div class="res-info-item">
-                <i class="bi bi-cash-coin" aria-hidden="true"></i>
-                <div>
-                  <span class="label">Montant / solde</span>
-                  <span class="value">{{ moneyFmt(res.montant_total) }} · reste {{ moneyFmt(res.solde_restant) }}</span>
-                </div>
-              </div>
-            </div>
+        <article class="rounded-lg overflow-hidden bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 shadow-sm hover:shadow-lg transition-shadow">
+          <div class="relative aspect-[16/10] bg-gray-100 dark:bg-carloc-800">
+            <img [src]="reservationImage(res)" [alt]="vehicleLabel(res)" class="w-full h-full object-cover" />
+            <span class="absolute left-3 top-3 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border" [ngClass]="statusClass(res)">
+              {{ statusLabel(res) }}
+            </span>
           </div>
-          <div class="res-actions">
-            @if (res.contrat_id) {
-              <span class="meta">Contrat #{{ res.contrat_id }}</span>
-            }
-            @if (canCancel(res)) {
-              <button
-                class="lux-btn lux-btn-outline"
-                type="button"
-                [disabled]="cancellingId() === res.id"
-                (click)="cancel(res)"
-              >
-                {{ cancellingId() === res.id ? 'Annulation…' : 'Annuler' }}
-              </button>
-            }
+          <div class="p-5 space-y-4">
+            <div class="min-w-0">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-lg font-black text-gray-900 dark:text-white truncate">{{ vehicleLabel(res) }}</h3>
+                <span class="shrink-0 text-xs font-bold text-gray-500 dark:text-gray-400">{{ res.immatriculation || 'N/A' }}</span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ res.categorie_vehicule || 'Catégorie non renseignée' }}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-lg bg-gray-50 dark:bg-carloc-800/60 p-3">
+                <span class="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Début</span>
+                <strong class="text-gray-900 dark:text-white">{{ dateFmt(res.date_debut) }}</strong>
+              </div>
+              <div class="rounded-lg bg-gray-50 dark:bg-carloc-800/60 p-3">
+                <span class="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Fin</span>
+                <strong class="text-gray-900 dark:text-white">{{ dateFmt(res.date_fin) }}</strong>
+              </div>
+              <div class="rounded-lg bg-gray-50 dark:bg-carloc-800/60 p-3">
+                <span class="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Durée</span>
+                <strong class="text-gray-900 dark:text-white">{{ res.nb_jours ?? '-' }} j</strong>
+              </div>
+              <div class="rounded-lg bg-gray-50 dark:bg-carloc-800/60 p-3">
+                <span class="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Reste</span>
+                <strong class="text-gray-900 dark:text-white">{{ moneyFmt(res.solde_restant) }}</strong>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <div>
+                <span class="block text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">Montant</span>
+                <strong class="text-xl font-black text-gray-900 dark:text-white">{{ moneyFmt(res.montant_du ?? res.montant_total) }}</strong>
+              </div>
+              @if (canCancel(res)) {
+                <button type="button" class="px-3 py-2 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-300 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50" [disabled]="cancellingId() === res.id" (click)="cancel(res)">
+                  @if (cancellingId() === res.id) {
+                    <i class="bi bi-arrow-repeat animate-spin"></i>
+                  } @else {
+                    Annuler
+                  }
+                </button>
+              }
+            </div>
           </div>
         </article>
-      } @empty {
-        <div class="lux-empty-state">
-          <i class="bi bi-calendar-x" aria-hidden="true"></i>
-          <h3>Aucune réservation</h3>
-          <p>Parcourez le catalogue pour réserver votre premier véhicule.</p>
-          <a routerLink="/catalogue" class="lux-btn lux-btn-primary">Réserver maintenant</a>
-        </div>
       }
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 dark:border-carloc-800 pt-5">
+      <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+        Page {{ page() }} sur {{ totalPages() }} · {{ count() }} réservation(s)
+      </span>
+      <div class="flex items-center gap-2">
+        <button class="px-4 py-2 rounded-lg border border-gray-200 dark:border-carloc-700 font-bold text-gray-700 dark:text-gray-200 disabled:opacity-40" type="button" [disabled]="page() <= 1 || loading()" (click)="goToPage(page() - 1)">
+          Précédent
+        </button>
+        <button class="px-4 py-2 rounded-lg border border-gray-200 dark:border-carloc-700 font-bold text-gray-700 dark:text-gray-200 disabled:opacity-40" type="button" [disabled]="page() >= totalPages() || loading()" (click)="goToPage(page() + 1)">
+          Suivant
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="rounded-lg border border-dashed border-gray-300 dark:border-carloc-700 bg-white dark:bg-carloc-900 p-10 text-center">
+      <i class="bi bi-calendar-x text-4xl text-gray-400"></i>
+      <h3 class="text-xl font-black text-gray-900 dark:text-white mt-4">Aucune réservation</h3>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Parcourez le catalogue pour louer votre premier véhicule.</p>
+      <a routerLink="/catalogue" class="inline-flex items-center gap-2 mt-6 px-4 py-2.5 rounded-lg bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold">
+        Voir le catalogue
+      </a>
     </div>
   }
 </div>
   `,
-  styles: [`
-  .lux-page { animation: fadeIn 0.4s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .page-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .page-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
-  .page-header p { color: var(--lux-text-muted); margin: 0; }
-  .reservations-list { display: flex; flex-direction: column; gap: 1.25rem; }
-  .lux-reservation-card {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    background: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    padding: 1.5rem;
-    box-shadow: var(--lux-shadow);
-  }
-  .res-details { flex: 1; min-width: 260px; }
-  .res-header h3 { margin: 0.35rem 0 0; font-size: 1.35rem; }
-  .plate { color: var(--lux-text-muted); font-size: 0.9rem; margin: 0; }
-  .res-body { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.25rem; }
-  .res-info-item { display: flex; gap: 0.75rem; align-items: flex-start; }
-  .res-info-item i {
-    font-size: 1.25rem;
-    color: var(--lux-accent);
-    background: rgba(212, 175, 55, 0.1);
-    padding: 0.45rem;
-    border-radius: 8px;
-  }
-  .res-info-item .label {
-    display: block;
-    font-size: 0.72rem;
-    color: var(--lux-text-muted);
-    text-transform: uppercase;
-  }
-  .res-info-item .value { font-weight: 600; }
-  .res-actions {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 0.75rem;
-    min-width: 140px;
-  }
-  .meta { font-size: 0.85rem; color: var(--lux-text-muted); }
-  .status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.65rem;
-    border-radius: 99px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  .tone-success { background: rgba(40, 167, 69, 0.15); color: #28a745; }
-  .tone-info { background: rgba(23, 162, 184, 0.15); color: #17a2b8; }
-  .tone-warning { background: rgba(255, 193, 7, 0.15); color: #ffc107; }
-  .tone-danger { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
-  .tone-muted { background: rgba(108, 117, 125, 0.15); color: #adb5bd; }
-  .lux-alert-error {
-    background: rgba(220, 53, 69, 0.1);
-    color: #ff6b6b;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-  }
-  .lux-alert-success {
-    background: rgba(20, 108, 67, 0.1);
-    color: #2ecc71;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-  }
-  .lux-empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--lux-text-muted);
-    background: var(--lux-surface);
-    border-radius: var(--lux-radius);
-    border: 1px dashed var(--lux-border);
-  }
-  .lux-empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
-  .lux-empty-state h3 { color: var(--lux-heading); margin-bottom: 0.5rem; }
-  `],
 })
 export class ClientReservationsPageComponent {
   private readonly reservationService = inject(ReservationService);
@@ -203,13 +141,24 @@ export class ClientReservationsPageComponent {
   readonly error = signal('');
   readonly message = signal('');
   readonly cancellingId = signal<number | null>(null);
+  readonly page = signal(1);
+  readonly count = signal(0);
 
   readonly moneyFmt = money;
   readonly dateFmt = shortDate;
   readonly statusLabel = reservationStatusLabel;
-  readonly statusTone = reservationStatusTone;
 
   constructor() {
+    this.reload();
+  }
+
+  totalPages(): number {
+    return Math.max(1, Math.ceil(this.count() / 10));
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.page.set(page);
     this.reload();
   }
 
@@ -218,13 +167,27 @@ export class ClientReservationsPageComponent {
     return parts.length ? parts.join(' ') : 'Véhicule';
   }
 
+  reservationImage(res: Reservation): string {
+    return imageUrl(res.image_vehicule_url ?? res.image_vehicule, res.categorie_vehicule, 0);
+  }
+
   canCancel(res: Reservation): boolean {
     return canCancelReservation(res, false);
   }
 
+  statusClass(res: Reservation): string {
+    if (res.est_annulee) return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-900/40';
+    if (res.est_soldee) return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-carloc-800 dark:text-gray-200 dark:border-carloc-700';
+    const today = new Date().toISOString().slice(0, 10);
+    if (res.date_debut && res.date_fin && res.date_debut <= today && today <= res.date_fin) {
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-900/40';
+    }
+    return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-900/40';
+  }
+
   cancel(res: Reservation): void {
     if (!res.id || !this.canCancel(res)) return;
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.')) return;
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) return;
     this.cancellingId.set(res.id);
     this.error.set('');
     this.message.set('');
@@ -233,16 +196,7 @@ export class ClientReservationsPageComponent {
       .pipe(finalize(() => { this.cancellingId.set(null); this.cdr.markForCheck(); }))
       .subscribe({
         next: (response: ReservationCancellationResponse) => {
-          let msg = response.message;
-          if (response.montant_remboursé) {
-            msg += ` (Remboursement: ${this.moneyFmt(response.montant_remboursé)}`;
-            if (response.montant_pénalité) {
-              msg += `, Pénalité: ${this.moneyFmt(response.montant_pénalité)}`;
-            }
-            msg += ')';
-          }
-          this.message.set(msg);
-          this.cdr.markForCheck();
+          this.message.set(response.message);
           this.reload();
         },
         error: (err: unknown) => { this.error.set(extractApiError(err)); this.cdr.markForCheck(); },
@@ -253,10 +207,14 @@ export class ClientReservationsPageComponent {
     this.loading.set(true);
     this.error.set('');
     this.reservationService
-      .getMesReservations()
+      .getReservations(this.page())
       .pipe(finalize(() => { this.loading.set(false); this.cdr.markForCheck(); }))
       .subscribe({
-        next: list => { this.reservations.set(list); this.cdr.markForCheck(); },
+        next: response => {
+          this.reservations.set(response.results ?? []);
+          this.count.set(response.count ?? 0);
+          this.cdr.markForCheck();
+        },
         error: (err: unknown) => { this.error.set(extractApiError(err)); this.cdr.markForCheck(); },
       });
   }

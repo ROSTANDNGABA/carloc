@@ -19,331 +19,202 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-<div class="lux-auth-page">
-  <div class="lux-auth-card register-card">
-    <div class="auth-header">
-      <h2>Rejoignez l'Excellence.</h2>
-      <p>Créez votre compte pour réserver votre premier véhicule premium.</p>
+<div class="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-carloc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-carloc-900 via-black to-black pt-16 sm:pt-8">
+  
+  <div class="w-full max-w-xl bg-carloc-900/50 backdrop-blur-xl border border-carloc-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+    
+    <!-- Decorative element -->
+    <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-carloc-800 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+
+    <div class="text-center mb-8 relative z-10">
+      <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-carloc-950 font-black text-2xl mx-auto mb-6 shadow-lg">
+        C
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">Rejoignez l'Excellence.</h2>
+      <p class="text-gray-400 text-sm">Créez votre compte pour réserver votre premier véhicule premium.</p>
     </div>
     
-    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="lux-form">
+    <form [formGroup]="registerForm" (ngSubmit)="submit()" class="space-y-5 relative z-10">
       @if (errorMessage()) {
-        <div class="lux-alert lux-alert-error">{{ errorMessage() }}</div>
+        <div class="bg-red-950/50 border border-red-900/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+          {{ errorMessage() }}
+        </div>
       }
       @if (successMessage()) {
-        <div class="lux-alert lux-alert-success">{{ successMessage() }}</div>
+        <div class="bg-green-950/50 border border-green-900/50 text-green-400 px-4 py-3 rounded-xl text-sm font-medium">
+          {{ successMessage() }}
+        </div>
       }
       
-      <div class="form-row">
-        <div class="form-group">
-          <label for="prenom">Prénom</label>
-          <input id="prenom" type="text" formControlName="prenom" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.prenom.invalid" placeholder="Jean" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="space-y-2">
+          <label for="prenom" class="block text-sm font-semibold text-gray-300">Prénom</label>
+          <input
+            id="prenom"
+            type="text"
+            formControlName="prenom"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600"
+            [class.border-red-500]="submitted() && registerForm.controls.prenom.invalid"
+            placeholder="Jean"
+          />
           @if (submitted() && registerForm.controls.prenom.errors?.['required']) {
-            <span class="field-error">Le prénom est obligatoire.</span>
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Le prénom est obligatoire.</span>
           }
         </div>
-        <div class="form-group">
-          <label for="nom">Nom</label>
-          <input id="nom" type="text" formControlName="nom" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.nom.invalid" placeholder="Dupont" />
+        <div class="space-y-2">
+          <label for="nom" class="block text-sm font-semibold text-gray-300">Nom</label>
+          <input
+            id="nom"
+            type="text"
+            formControlName="nom"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600"
+            [class.border-red-500]="submitted() && registerForm.controls.nom.invalid"
+            placeholder="Dupont"
+          />
           @if (submitted() && registerForm.controls.nom.errors?.['required']) {
-            <span class="field-error">Le nom est obligatoire.</span>
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Le nom est obligatoire.</span>
           }
         </div>
       </div>
       
-      <div class="form-group">
-        <label for="email">Adresse e-mail</label>
-        <input id="email" type="email" formControlName="email" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.email.invalid" placeholder="vous@exemple.com" />
+      <div class="space-y-2">
+        <label for="email" class="block text-sm font-semibold text-gray-300">Adresse e-mail</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600"
+          [class.border-red-500]="submitted() && registerForm.controls.email.invalid"
+          placeholder="vous@exemple.com"
+        />
         @if (submitted() && registerForm.controls.email.errors?.['required']) {
-          <span class="field-error">L'email est obligatoire.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">L'email est obligatoire.</span>
         }
         @if (submitted() && registerForm.controls.email.errors?.['email']) {
-          <span class="field-error">Veuillez entrer un email valide.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Veuillez entrer un email valide.</span>
         }
       </div>
       
-      <div class="form-group">
-        <label for="telephone">Téléphone</label>
-        <input id="telephone" type="tel" formControlName="telephone" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.telephone.invalid" placeholder="+33 6 00 00 00 00" />
-        @if (submitted() && registerForm.controls.telephone.errors?.['required']) {
-          <span class="field-error">Le téléphone est obligatoire.</span>
-        }
-        @if (submitted() && registerForm.controls.telephone.errors?.['telephoneFormat']) {
-          <span class="field-error">Format invalide (ex. 0612345678 ou +33612345678).</span>
-        }
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="space-y-2">
+          <label for="telephone" class="block text-sm font-semibold text-gray-300">Téléphone</label>
+          <input
+            id="telephone"
+            type="tel"
+            formControlName="telephone"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600"
+            [class.border-red-500]="submitted() && registerForm.controls.telephone.invalid"
+            placeholder="+33 6 00 00 00 00"
+          />
+          @if (submitted() && registerForm.controls.telephone.errors?.['required']) {
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Le téléphone est obligatoire.</span>
+          }
+          @if (submitted() && registerForm.controls.telephone.errors?.['telephoneFormat']) {
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Format invalide.</span>
+          }
+        </div>
+        
+        <div class="space-y-2">
+          <label for="num_permis" class="block text-sm font-semibold text-gray-300">Numéro de permis</label>
+          <input
+            id="num_permis"
+            type="text"
+            formControlName="num_permis"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600 uppercase"
+            [class.border-red-500]="submitted() && registerForm.controls.num_permis.invalid"
+            placeholder="0000000"
+          />
+          @if (submitted() && registerForm.controls.num_permis.errors?.['required']) {
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Le permis est obligatoire.</span>
+          }
+          @if (submitted() && registerForm.controls.num_permis.errors?.['permisFormat']) {
+            <span class="text-red-400 text-xs font-semibold mt-1 block">Format invalide.</span>
+          }
+        </div>
       </div>
       
-      <div class="form-group">
-        <label for="password">Mot de passe <span class="hint">(min. 8 caractères)</span></label>
-        <div class="password-input-wrap">
+      <div class="space-y-2">
+        <label for="password" class="block text-sm font-semibold text-gray-300">Mot de passe <span class="text-gray-500 font-normal">(min. 8)</span></label>
+        <div class="relative">
           <input
             id="password"
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
-            class="lux-input"
-            [class.input-invalid]="submitted() && registerForm.controls.password.invalid"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600 tracking-widest"
+            [class.border-red-500]="submitted() && registerForm.controls.password.invalid"
             placeholder="••••••••"
           />
           <button
             type="button"
-            class="password-toggle"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
             (click)="togglePasswordVisibility()"
             [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            [attr.aria-pressed]="showPassword()"
           >
             <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()" aria-hidden="true"></i>
           </button>
         </div>
         @if (submitted() && registerForm.controls.password.errors?.['required']) {
-          <span class="field-error">Le mot de passe est obligatoire.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Le mot de passe est obligatoire.</span>
         }
         @if (submitted() && registerForm.controls.password.errors?.['minlength']) {
-          <span class="field-error">Le mot de passe doit contenir au moins 8 caractères.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Au moins 8 caractères.</span>
         }
       </div>
       
-      <div class="form-group">
-        <label for="password_confirm">Confirmer mot de passe</label>
-        <div class="password-input-wrap">
+      <div class="space-y-2">
+        <label for="password_confirm" class="block text-sm font-semibold text-gray-300">Confirmer le mot de passe</label>
+        <div class="relative">
           <input
             id="password_confirm"
             [type]="showPasswordConfirm() ? 'text' : 'password'"
             formControlName="password_confirm"
-            class="lux-input"
-            [class.input-invalid]="submitted() && (registerForm.controls.password_confirm.invalid || registerForm.hasError('passwordMismatch'))"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3 pr-12 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600 tracking-widest"
+            [class.border-red-500]="submitted() && (registerForm.controls.password_confirm.invalid || registerForm.hasError('passwordMismatch'))"
             placeholder="••••••••"
           />
           <button
             type="button"
-            class="password-toggle"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
             (click)="togglePasswordConfirmVisibility()"
             [attr.aria-label]="showPasswordConfirm() ? 'Masquer la confirmation du mot de passe' : 'Afficher la confirmation du mot de passe'"
+            [attr.aria-pressed]="showPasswordConfirm()"
           >
             <i class="bi" [class.bi-eye]="!showPasswordConfirm()" [class.bi-eye-slash]="showPasswordConfirm()" aria-hidden="true"></i>
           </button>
         </div>
         @if (submitted() && registerForm.controls.password_confirm.errors?.['required']) {
-          <span class="field-error">La confirmation est obligatoire.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">La confirmation est obligatoire.</span>
         }
         @if (submitted() && registerForm.hasError('passwordMismatch')) {
-          <span class="field-error">Les mots de passe ne correspondent pas.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Les mots de passe ne correspondent pas.</span>
         }
       </div>
       
-      <div class="form-group">
-        <label for="num_permis">Numéro de permis</label>
-        <input id="num_permis" type="text" formControlName="num_permis" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.num_permis.invalid" placeholder="0000000" />
-        @if (submitted() && registerForm.controls.num_permis.errors?.['required']) {
-          <span class="field-error">Le numéro de permis est obligatoire.</span>
+      <button 
+        type="submit" 
+        class="w-full bg-white text-carloc-950 hover:bg-gray-200 font-bold py-4 px-6 rounded-xl transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        [disabled]="loading()"
+      >
+        @if (loading()) { 
+          <i class="bi bi-arrow-repeat animate-spin text-lg"></i>
+          Création en cours... 
+        } @else { 
+          Créer mon compte
+          <i class="bi bi-arrow-right"></i>
         }
-        @if (submitted() && registerForm.controls.num_permis.errors?.['permisFormat']) {
-          <span class="field-error">Format permis invalide (ex. AB1234567).</span>
-        }
-      </div>
-      
-      <button type="submit" class="lux-btn lux-btn-primary full-width" [disabled]="loading()">
-        @if (loading()) { Création en cours... } @else { Créer mon compte }
       </button>
     </form>
     
-    <div class="auth-footer">
-      <p>Vous avez déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+    <div class="mt-8 text-center relative z-10">
+      <p class="text-gray-400 text-sm">
+        Vous avez déjà un compte ? 
+        <a routerLink="/login" class="text-white font-semibold hover:underline">Se connecter</a>
+      </p>
     </div>
   </div>
 </div>
-  `,
-  styles: [`
-  .lux-auth-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 80px);
-    padding: 2rem;
-    background: radial-gradient(circle at center, var(--lux-surface-alt) 0%, var(--lux-bg) 100%);
-    width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-  .lux-auth-page *,
-  .lux-auth-page *::before,
-  .lux-auth-page *::after {
-    box-sizing: border-box;
-  }
-  .lux-auth-card {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    padding: 3rem;
-    width: 100%;
-    max-width: 550px;
-    min-width: 0;
-    box-shadow: var(--lux-shadow);
-  }
-  .auth-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-  .auth-header h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    overflow-wrap: anywhere;
-  }
-  .auth-header p {
-    color: var(--lux-text-muted);
-    overflow-wrap: anywhere;
-  }
-  .lux-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  .form-row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 0;
-  }
-  .form-group label {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .lux-input {
-    background-color: var(--lux-bg);
-    border: 1px solid var(--lux-border);
-    color: var(--lux-text);
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    font-family: var(--lux-font);
-    transition: var(--lux-transition);
-    width: 100%;
-    min-width: 0;
-  }
-  .lux-input:focus {
-    outline: none;
-    border-color: var(--lux-accent);
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-  }
-  .input-invalid {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
-  }
-  .password-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .password-input-wrap .lux-input {
-    padding-right: 3rem;
-  }
-  .password-toggle {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: var(--lux-text-muted);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2rem;
-    font-size: 1rem;
-  }
-  .password-toggle:hover {
-    color: var(--lux-accent);
-  }
-  .full-width {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  .auth-footer {
-    margin-top: 2rem;
-    text-align: center;
-    color: var(--lux-text-muted);
-  }
-  .lux-alert-error {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: #ff6b6b;
-    border: 1px solid rgba(220, 53, 69, 0.2);
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-  .lux-alert-success {
-    background-color: rgba(40, 167, 69, 0.1);
-    color: #51cf66;
-    border: 1px solid rgba(40, 167, 69, 0.2);
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-  .field-error {
-    color: #ff6b6b;
-    font-size: 0.82rem;
-    margin-top: 0.25rem;
-    font-weight: 500;
-  }
-  .hint {
-    color: var(--lux-text-muted);
-    font-weight: 400;
-    font-size: 0.85rem;
-  }
-  @media (max-width: 680px) {
-    .lux-auth-page {
-      align-items: flex-start;
-      min-height: auto;
-      padding: 1rem 0.75rem;
-    }
-
-    .lux-auth-card {
-      max-width: 100%;
-      padding: 1.25rem;
-      border-radius: 12px;
-    }
-
-    .auth-header {
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    .auth-header h2 {
-      font-size: 1.55rem;
-      line-height: 1.15;
-    }
-
-    .auth-header p {
-      font-size: 0.95rem;
-    }
-
-    .lux-form {
-      gap: 1rem;
-    }
-
-    .form-row {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .lux-input {
-      padding: 0.78rem 0.9rem;
-    }
-  }
-
-  @media (max-width: 390px) {
-    .lux-auth-page {
-      padding-inline: 0.5rem;
-    }
-
-    .lux-auth-card {
-      padding: 1rem;
-    }
-  }
-  `]
+  `
 })
 export class RegisterPageComponent {
   private readonly fb = inject(FormBuilder);
@@ -370,41 +241,16 @@ export class RegisterPageComponent {
   readonly showPassword = signal(false);
   readonly showPasswordConfirm = signal(false);
 
-  get nomControl() {
-    return this.registerForm.controls.nom;
-  }
+  get nomControl() { return this.registerForm.controls.nom; }
+  get prenomControl() { return this.registerForm.controls.prenom; }
+  get emailControl() { return this.registerForm.controls.email; }
+  get telephoneControl() { return this.registerForm.controls.telephone; }
+  get numPermisControl() { return this.registerForm.controls.num_permis; }
+  get passwordControl() { return this.registerForm.controls.password; }
+  get passwordConfirmControl() { return this.registerForm.controls.password_confirm; }
 
-  get prenomControl() {
-    return this.registerForm.controls.prenom;
-  }
-
-  get emailControl() {
-    return this.registerForm.controls.email;
-  }
-
-  get telephoneControl() {
-    return this.registerForm.controls.telephone;
-  }
-
-  get numPermisControl() {
-    return this.registerForm.controls.num_permis;
-  }
-
-  get passwordControl() {
-    return this.registerForm.controls.password;
-  }
-
-  get passwordConfirmControl() {
-    return this.registerForm.controls.password_confirm;
-  }
-
-  togglePasswordVisibility(): void {
-    this.showPassword.update(value => !value);
-  }
-
-  togglePasswordConfirmVisibility(): void {
-    this.showPasswordConfirm.update(value => !value);
-  }
+  togglePasswordVisibility(): void { this.showPassword.update(value => !value); }
+  togglePasswordConfirmVisibility(): void { this.showPasswordConfirm.update(value => !value); }
 
   submit(): void {
     this.submitted.set(true);

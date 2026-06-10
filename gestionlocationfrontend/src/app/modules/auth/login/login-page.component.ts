@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -12,144 +12,102 @@ import { extractApiError } from '@app/core/utils/api.util';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-<div class="lux-auth-page">
-  <div class="lux-auth-card">
-    <div class="auth-header">
-      <h2>Bon retour parmi nous.</h2>
-      <p>Connectez-vous pour accéder à votre espace de location premium.</p>
+<div class="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-carloc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-carloc-900 via-black to-black">
+  
+  <div class="w-full max-w-md bg-carloc-900/50 backdrop-blur-xl border border-carloc-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+    
+    <!-- Decorative element -->
+    <div class="absolute -top-24 -right-24 w-48 h-48 bg-carloc-800 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+
+    <div class="text-center mb-10 relative z-10">
+      <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-carloc-950 font-black text-2xl mx-auto mb-6 shadow-lg">
+        C
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">Bon retour.</h2>
+      <p class="text-gray-400 text-sm">Connectez-vous à votre espace premium.</p>
     </div>
     
-    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="lux-form">
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-6 relative z-10">
       @if (errorMessage()) {
-        <div class="lux-alert lux-alert-error">{{ errorMessage() }}</div>
+        <div class="bg-red-950/50 border border-red-900/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
+          {{ errorMessage() }}
+        </div>
       }
       
-      <div class="form-group">
-        <label for="username">Email ou prénom</label>
+      <div class="space-y-2">
+        <label for="username" class="block text-sm font-semibold text-gray-300">Email ou identifiant</label>
         <input
           id="username"
           type="text"
           formControlName="username"
-          class="lux-input"
-          [class.input-invalid]="submitted() && usernameControl.invalid"
-          placeholder="Votre email ou identifiant"
+          class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600"
+          [class.border-red-500]="submitted() && usernameControl.invalid"
+          [class.focus:border-red-500]="submitted() && usernameControl.invalid"
+          [class.focus:ring-red-500]="submitted() && usernameControl.invalid"
+          placeholder="Entrez votre email"
           autocomplete="username"
         />
         @if (submitted() && usernameControl.errors?.['required']) {
-          <span class="field-error">Renseignez votre email ou votre identifiant.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Ce champ est requis.</span>
         }
       </div>
       
-      <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          class="lux-input"
-          [class.input-invalid]="submitted() && passwordControl.invalid"
-          placeholder="••••••••"
-        />
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label for="password" class="block text-sm font-semibold text-gray-300">Mot de passe</label>
+          <a href="#" class="text-xs text-gray-400 hover:text-white transition-colors">Oublié ?</a>
+        </div>
+        <div class="relative">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="w-full bg-carloc-950/50 border border-carloc-700 text-white px-4 py-3.5 pr-12 rounded-xl focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all placeholder:text-gray-600 tracking-widest"
+            [class.border-red-500]="submitted() && passwordControl.invalid"
+            [class.focus:border-red-500]="submitted() && passwordControl.invalid"
+            [class.focus:ring-red-500]="submitted() && passwordControl.invalid"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            [attr.aria-pressed]="showPassword()"
+          >
+            <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()" aria-hidden="true"></i>
+          </button>
+        </div>
         @if (submitted() && passwordControl.errors?.['required']) {
-          <span class="field-error">Le mot de passe est obligatoire.</span>
+          <span class="text-red-400 text-xs font-semibold mt-1 block">Le mot de passe est obligatoire.</span>
         }
       </div>
       
-      <button type="submit" class="lux-btn lux-btn-primary full-width" [disabled]="loginForm.invalid || loading()">
-        @if (loading()) { Connexion en cours... } @else { Se connecter }
+      <button 
+        type="submit" 
+        class="w-full bg-white text-carloc-950 hover:bg-gray-200 font-bold py-4 px-6 rounded-xl transition-all mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        [disabled]="loginForm.invalid || loading()"
+      >
+        @if (loading()) { 
+          <i class="bi bi-arrow-repeat animate-spin text-lg"></i>
+          Connexion... 
+        } @else { 
+          Se connecter 
+          <i class="bi bi-arrow-right"></i>
+        }
       </button>
     </form>
     
-    <div class="auth-footer">
-      <p>Nouveau chez CarLoc ? <a routerLink="/inscription">Créer un compte</a></p>
+    <div class="mt-8 text-center relative z-10">
+      <p class="text-gray-400 text-sm">
+        Nouveau chez CarLoc ? 
+        <a routerLink="/inscription" class="text-white font-semibold hover:underline">Créer un compte</a>
+      </p>
     </div>
   </div>
 </div>
-  `,
-  styles: [`
-  .lux-auth-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 80px);
-    padding: 2rem;
-    background: radial-gradient(circle at center, var(--lux-surface-alt) 0%, var(--lux-bg) 100%);
-  }
-  .lux-auth-card {
-    background-color: var(--lux-surface);
-    border: 1px solid var(--lux-border);
-    border-radius: var(--lux-radius);
-    padding: 3rem;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: var(--lux-shadow);
-  }
-  .auth-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-  .auth-header h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  .auth-header p {
-    color: var(--lux-text-muted);
-  }
-  .lux-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .form-group label {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .lux-input {
-    background-color: var(--lux-bg);
-    border: 1px solid var(--lux-border);
-    color: var(--lux-text);
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    font-family: var(--lux-font);
-    transition: var(--lux-transition);
-  }
-  .lux-input:focus {
-    outline: none;
-    border-color: var(--lux-accent);
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-  }
-  .input-invalid {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
-  }
-  .full-width {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  .auth-footer {
-    margin-top: 2rem;
-    text-align: center;
-    color: var(--lux-text-muted);
-  }
-  .lux-alert-error {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: #ff6b6b;
-    border: 1px solid rgba(220, 53, 69, 0.2);
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-  .field-error {
-    color: #dc2626;
-    font-size: 0.82rem;
-    font-weight: 600;
-  }
-  `]
+  `
 })
 export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
@@ -166,6 +124,7 @@ export class LoginPageComponent {
   readonly errorMessage = signal('');
   readonly submitted = signal(false);
   readonly returnUrl = signal(this.getReturnUrl());
+  readonly showPassword = signal(false);
 
   get usernameControl() {
     return this.loginForm.controls.username;
@@ -173,6 +132,10 @@ export class LoginPageComponent {
 
   get passwordControl() {
     return this.loginForm.controls.password;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update(value => !value);
   }
 
   submit(): void {

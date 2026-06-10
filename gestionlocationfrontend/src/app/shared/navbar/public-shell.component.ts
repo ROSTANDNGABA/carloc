@@ -13,8 +13,8 @@ import { AuthService } from '@app/auth/auth.service';
   <header class="lux-header" [class.scrolled]="isScrolled()">
     <div class="lux-container">
       <a routerLink="/" class="lux-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lux-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-        CarLoc<span>.</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+        <span class="logo-word">CarLoc<span class="logo-dot">.</span></span>
       </a>
       <nav class="lux-nav">
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
@@ -22,10 +22,6 @@ import { AuthService } from '@app/auth/auth.service';
         <a routerLink="/catalogue" routerLinkActive="active">Notre Flotte</a>
       </nav>
       <div class="lux-actions">
-        <button class="theme-toggle-btn" type="button" (click)="toggleTheme()" aria-label="Basculer le thème">
-          <i class="bi" [ngClass]="isDarkTheme() ? 'bi-sun' : 'bi-moon'"></i>
-        </button>
-        
         @if (isLoggedIn()) {
           <a routerLink="/client" class="lux-btn lux-btn-primary btn-with-icon">
             Espace Client
@@ -47,7 +43,10 @@ import { AuthService } from '@app/auth/auth.service';
   <footer class="lux-footer">
     <div class="lux-container footer-grid">
       <div class="footer-brand">
-        <h3>CarLoc<span>.</span></h3>
+        <div class="footer-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+          <strong>CarLoc<span>.</span></strong>
+        </div>
         <p>L'excellence de la location automobile. Conduisez vos rêves dès aujourd'hui.</p>
       </div>
       <div class="footer-links">
@@ -97,16 +96,7 @@ import { AuthService } from '@app/auth/auth.service';
     color: #1e293b;
   }
   .theme-light .lux-logo {
-    color: #0f172a;
-  }
-  .theme-light .theme-toggle-btn {
-    border-color: #cbd5e1;
-    color: #475569;
-  }
-  .theme-light .theme-toggle-btn:hover {
-    background: rgba(212,175,55,0.12);
-    color: var(--lux-accent);
-    border-color: var(--lux-accent);
+    color: #ffffff;
   }
   .lux-container {
     max-width: 1200px;
@@ -122,23 +112,33 @@ import { AuthService } from '@app/auth/auth.service';
   .lux-logo {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--lux-heading);
-    letter-spacing: -0.05em;
+    gap: 0.7rem;
+    padding: 0.45rem 0.75rem;
+    background: #080808;
+    border-radius: 0;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0;
     text-decoration: none;
     transition: transform 0.3s ease;
     min-width: 0;
+    line-height: 1;
   }
   .lux-logo:hover {
     transform: scale(1.02);
   }
-  .lux-logo span {
-    color: var(--lux-accent);
+  .lux-logo .logo-word {
+    color: #ffffff;
+  }
+  .lux-logo .logo-dot {
+    color: #d7b82a;
+    margin-left: 0.12rem;
   }
   .logo-icon {
-    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+    color: #d7b82a;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 0 8px rgba(215, 184, 42, 0.3));
   }
   .lux-nav {
     display: flex;
@@ -163,17 +163,6 @@ import { AuthService } from '@app/auth/auth.service';
     gap: 1rem;
     align-items: center;
     min-width: 0;
-  }
-  .theme-toggle-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%;
-    background: transparent; border: 1px solid var(--lux-border);
-    color: var(--lux-text-muted); cursor: pointer;
-    transition: var(--lux-transition); font-size: 1.1rem;
-  }
-  .theme-toggle-btn:hover {
-    background: rgba(212,175,55,0.1); color: var(--lux-accent);
-    border-color: var(--lux-accent);
   }
   .btn-with-icon {
     display: flex;
@@ -203,9 +192,29 @@ import { AuthService } from '@app/auth/auth.service';
     gap: 4rem;
     align-items: flex-start;
   }
-  .footer-brand h3 {
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.75rem;
+    margin-bottom: 1rem;
+    background: #080808;
+    color: #ffffff;
+  }
+  .footer-logo svg {
+    color: #d7b82a;
+  }
+  .footer-logo strong {
+    color: #ffffff;
     font-size: 1.8rem;
-    font-weight: 800;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+  .footer-logo span {
+    color: #d7b82a;
+  }
+  .footer-brand h3 {
     margin-bottom: 1rem;
   }
   .footer-brand span {
@@ -329,14 +338,6 @@ export class PublicShellComponent implements OnInit {
 
   isLoggedIn(): boolean {
     return this.auth.isLoggedIn();
-  }
-
-  toggleTheme(): void {
-    const newThemeIsDark = !this.isDarkTheme();
-    this.isDarkTheme.set(newThemeIsDark);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('carloc-theme', newThemeIsDark ? 'dark' : 'light');
-    }
   }
 
   toggleMenu() {
