@@ -1,0 +1,355 @@
+/* Catalogue Dark Theme Override */
+.lux-catalogue {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.catalogue-header {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%) !important;
+  border-bottom-color: #2a2a2a !important;
+}
+
+.eyebrow {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  padding: 0.4rem 1rem !important;
+  border-radius: 999px !important;
+  display: inline-block !important;
+}
+
+.header-content h1 {
+  background: linear-gradient(to right, #ffffff, #fef3c7, #ffffff) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.header-content p {
+  color: #9ca3af !important;
+}
+
+/* Filters */
+.filter-card {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+.filter-card h3 {
+  color: #ffffff !important;
+}
+
+.lux-input,
+.lux-form select,
+.lux-form input {
+  background-color: #000000 !important;
+  border-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.lux-input:focus,
+.lux-form select:focus,
+.lux-form input:focus {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1) !important;
+}
+
+.lux-input::placeholder {
+  color: #6b7280 !important;
+}
+
+.form-group label {
+  color: #d1d5db !important;
+}
+
+/* Category Section */
+.category-title {
+  color: #ffffff !important;
+  border-bottom-color: #fbbf24 !important;
+}
+
+/* Vehicle Cards */
+.lux-vehicle-card {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+.lux-vehicle-card:hover {
+  border-color: rgba(251, 191, 36, 0.5) !important;
+  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1) !important;
+}
+
+.vehicle-image-wrap {
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%) !important;
+  border-bottom-color: #2a2a2a !important;
+}
+
+.vehicle-title h3,
+.lux-vehicle-info h3 {
+  color: #ffffff !important;
+}
+
+.vehicle-price strong {
+  color: #fbbf24 !important;
+}
+
+.vehicle-specs {
+  color: #9ca3af !important;
+}
+
+.category-tag {
+  background: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+/* Status Badges */
+.status-badge.available,
+.available {
+  background: rgba(251, 191, 36, 0.2) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+.status-badge.unavailable,
+.unavailable {
+  background: rgba(75, 85, 99, 0.5) !important;
+  color: #9ca3af !important;
+  border-color: #4b5563 !important;
+}
+
+/* Buttons */
+.lux-btn-outline {
+  background: transparent !important;
+  border-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.lux-btn-outline:hover:not(:disabled) {
+  border-color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+}
+
+.lux-btn-outline:disabled {
+  background: #1f2937 !important;
+  color: #6b7280 !important;
+  border-color: #374151 !important;
+}
+
+/* Empty State */
+.lux-empty-state {
+  background: #111827 !important;
+  border-color: #374151 !important;
+}
+
+.lux-empty-state h3 {
+  color: #ffffff !important;
+}
+
+.lux-empty-state p {
+  color: #9ca3af !important;
+}
+
+/* Skeleton */
+.lux-skeleton-card {
+  background: #111827 !important;
+  border: 1px solid #1f2937 !important;
+}
+
+/* Modal */
+.modal-container {
+  background: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+.modal-header {
+  background: #111827 !important;
+  border-bottom-color: #1f2937 !important;
+}
+
+.header-vehicle h3,
+.modal-header h3 {
+  color: #ffffff !important;
+}
+
+.header-category {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.modal-close-btn {
+  background: #000000 !important;
+  border-color: #2a2a2a !important;
+  color: #9ca3af !important;
+}
+
+.modal-close-btn:hover {
+  border-color: #fbbf24 !important;
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+}
+
+.modal-body {
+  background: #111827 !important;
+}
+
+.vehicle-preview,
+.renter-card,
+.price-card {
+  background: #000000 !important;
+  border-color: #1f2937 !important;
+}
+
+.vehicle-preview img {
+  background: #1a1a1a !important;
+}
+
+.renter-icon {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+.renter-info strong {
+  color: #ffffff !important;
+}
+
+.renter-info span {
+  color: #9ca3af !important;
+}
+
+/* Date Fields */
+.date-field label {
+  color: #9ca3af !important;
+}
+
+.date-field input[type='date'] {
+  background: #000000 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.date-field input[type='date']:hover {
+  border-color: #fbbf24 !important;
+}
+
+.date-field input[type='date']:focus {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.12) !important;
+}
+
+/* Availability Badge */
+.availability-badge.ok {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.availability-badge.ko {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Price Card */
+.price-row {
+  color: #9ca3af !important;
+}
+
+.price-row.total {
+  color: #e5e7eb !important;
+}
+
+.price-row.total strong {
+  color: #fbbf24 !important;
+}
+
+.price-disclaimer {
+  color: #6b7280 !important;
+}
+
+/* Modal Footer */
+.modal-footer {
+  background: #111827 !important;
+  border-top-color: #1f2937 !important;
+}
+
+.btn-cancel {
+  color: #d1d5db !important;
+}
+
+.btn-cancel:hover {
+  color: #ffffff !important;
+  background: #1f2937 !important;
+}
+
+.btn-confirm {
+  background: #fbbf24 !important;
+  color: #000000 !important;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: #f59e0b !important;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4) !important;
+}
+
+.btn-confirm:disabled {
+  background: #374151 !important;
+  color: #6b7280 !important;
+}
+
+/* Form Messages */
+.form-message.success {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.form-message.danger {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.form-message.warning {
+  color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.profile-link {
+  color: #fbbf24 !important;
+}
+
+.profile-link:hover {
+  color: #ffffff !important;
+}
+
+/* Alert Error */
+.lux-alert-error {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Override any white backgrounds */
+.lux-catalogue * {
+  scrollbar-color: #fbbf24 #1f2937;
+}
+
+.lux-catalogue *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.lux-catalogue *::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.lux-catalogue *::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 4px;
+}
+
+.lux-catalogue *::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
