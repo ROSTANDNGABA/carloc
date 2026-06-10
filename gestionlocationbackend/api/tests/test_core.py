@@ -284,3 +284,24 @@ class CoreMetierTests(CarLocTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data)
         self.assertGreaterEqual(len(results), 1)
+
+    def test_facture_pdf_manquant_est_regenere(self):
+        debut = date.today() + timedelta(days=1)
+        fin = debut + timedelta(days=3)
+        resa = Reservation.objects.create(
+            client=self.client_profile,
+            vehicule=self.vehicule,
+            date_debut=debut,
+            date_fin=fin,
+        )
+        facture = creer_facture(resa)
+        pdf_name = facture.fichier_pdf.name
+        facture.fichier_pdf.storage.delete(pdf_name)
+
+        self.client.force_authenticate(user=self.client_user)
+        response = self.client.get(f"/api/factures/{facture.id}/telecharger-pdf/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("application/pdf", response["Content-Type"])
+        facture.refresh_from_db()
+        self.assertTrue(facture.fichier_pdf.storage.exists(facture.fichier_pdf.name))

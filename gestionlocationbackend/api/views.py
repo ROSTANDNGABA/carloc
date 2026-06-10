@@ -506,16 +506,37 @@ class FactureViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=["get"], url_path="telecharger-pdf")
     def telecharger_pdf(self, request, pk=None):
         facture = self.get_object()
+        if not self._pdf_exists(facture):
+            facture = generer_pdf_facture(facture)
+
         if not facture.fichier_pdf:
             return Response(
-                {"detail": "Aucun PDF disponible. Utilisez generer-pdf d'abord."},
+                {"detail": "Aucun PDF disponible pour cette facture."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        try:
+            pdf_file = facture.fichier_pdf.open("rb")
+        except FileNotFoundError:
+            facture = generer_pdf_facture(facture)
+            pdf_file = facture.fichier_pdf.open("rb")
+
+        as_attachment = request.query_params.get("download", "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
         return FileResponse(
-            facture.fichier_pdf.open("rb"),
-            as_attachment=True,
+            pdf_file,
+            as_attachment=as_attachment,
             filename=facture.fichier_pdf.name,
         )
+
+    @staticmethod
+    def _pdf_exists(facture):
+        if not facture.fichier_pdf or not facture.fichier_pdf.name:
+            return False
+        return facture.fichier_pdf.storage.exists(facture.fichier_pdf.name)
 
 
 class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
