@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '@app/auth/auth.service';
 import { imageUrl } from '@app/shared/formatters';
-import { ButtonComponent } from '@app/shared/components';
 
 interface ShellNavItem {
   label: string;
@@ -15,7 +14,7 @@ interface ShellNavItem {
 @Component({
   selector: 'app-client-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ButtonComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen flex flex-col bg-gray-50">

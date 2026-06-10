@@ -28,15 +28,27 @@ import { money, shortDate } from '@app/shared/formatters';
           @if (error()) {
             <div class="alert-banner danger">{{ error() }}</div>
           }
+          @if (success()) {
+            <div class="alert-banner success">{{ success() }}</div>
+          }
 
           <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
             <label>
               <span>Nom utilisateur</span>
-              <input formControlName="username" type="text" autocomplete="username" />
+              <input formControlName="username" type="text" autocomplete="username" [class.input-invalid]="submitted() && form.controls.username.invalid" />
+              @if (submitted() && form.controls.username.errors?.['required']) {
+                <small class="field-error">Le nom utilisateur est obligatoire.</small>
+              }
             </label>
             <label>
               <span>Email</span>
-              <input formControlName="email" type="email" autocomplete="email" />
+              <input formControlName="email" type="email" autocomplete="email" [class.input-invalid]="submitted() && form.controls.email.invalid" />
+              @if (submitted() && form.controls.email.errors?.['required']) {
+                <small class="field-error">L'adresse email est obligatoire.</small>
+              }
+              @if (submitted() && form.controls.email.errors?.['email']) {
+                <small class="field-error">Saisissez une adresse email valide.</small>
+              }
             </label>
             <label>
               <span>Prénom</span>
@@ -48,7 +60,15 @@ import { money, shortDate } from '@app/shared/formatters';
             </label>
             <label>
               <span>Mot de passe</span>
-              <input formControlName="password" type="password" autocomplete="new-password" />
+              <input formControlName="password" type="password" autocomplete="new-password" [class.input-invalid]="submitted() && form.controls.password.invalid" />
+              @if (selected()) {
+                <small class="field-hint">Laissez vide pour conserver le mot de passe actuel.</small>
+              } @else {
+                <small class="field-hint">8 caractères minimum pour le nouveau gestionnaire.</small>
+              }
+              @if (submitted() && form.controls.password.errors?.['minlength']) {
+                <small class="field-error">Le mot de passe doit contenir au moins 8 caractères.</small>
+              }
             </label>
             <label class="check-row">
               <input formControlName="is_active" type="checkbox" />
@@ -210,6 +230,20 @@ import { money, shortDate } from '@app/shared/formatters';
     .form-grid input {
       min-height: 42px;
     }
+    .form-grid input.input-invalid {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+    .field-error {
+      color: #dc2626;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .field-hint {
+      color: var(--carloc-text-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
     .check-row {
       flex-direction: row !important;
       align-items: center;
@@ -266,7 +300,9 @@ export class AdminGestionnairesPageComponent {
   readonly gestionnaires = signal<Gestionnaire[]>([]);
   readonly selected = signal<Gestionnaire | null>(null);
   readonly saving = signal(false);
+  readonly submitted = signal(false);
   readonly error = signal('');
+  readonly success = signal('');
   readonly moneyFmt = money;
   readonly dateFmt = shortDate;
 
@@ -292,6 +328,7 @@ export class AdminGestionnairesPageComponent {
   }
 
   save(): void {
+    this.submitted.set(true);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -301,6 +338,7 @@ export class AdminGestionnairesPageComponent {
     const selected = this.selected();
     this.saving.set(true);
     this.error.set('');
+    this.success.set('');
 
     const request = selected
       ? this.admin.updateGestionnaire(selected.id, payload)
@@ -308,6 +346,9 @@ export class AdminGestionnairesPageComponent {
 
     request.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: () => {
+        this.success.set(
+          selected ? 'Gestionnaire mis à jour avec succès.' : 'Gestionnaire créé avec succès.',
+        );
         this.resetForm();
         this.load();
       },
@@ -317,6 +358,9 @@ export class AdminGestionnairesPageComponent {
 
   edit(manager: Gestionnaire): void {
     this.selected.set(manager);
+    this.error.set('');
+    this.success.set('');
+    this.submitted.set(false);
     this.form.reset({
       username: manager.username,
       email: manager.email,
@@ -339,6 +383,7 @@ export class AdminGestionnairesPageComponent {
 
   resetForm(): void {
     this.selected.set(null);
+    this.submitted.set(false);
     this.form.reset({
       username: '',
       email: '',

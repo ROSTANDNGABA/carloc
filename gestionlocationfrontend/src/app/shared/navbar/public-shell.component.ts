@@ -10,7 +10,7 @@ import { AuthService } from '@app/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
 <div [ngClass]="isDarkTheme() ? 'theme-dark' : 'theme-light'">
-  <header class="lux-header">
+  <header class="lux-header" [class.scrolled]="isScrolled()">
     <div class="lux-container">
       <a routerLink="/" class="lux-logo">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--lux-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
@@ -31,9 +31,9 @@ import { AuthService } from '@app/auth/auth.service';
             Espace Client
           </a>
         } @else {
-          <a routerLink="/login" class="lux-btn lux-btn-primary btn-with-icon">
+          <a routerLink="/inscription" class="lux-btn lux-btn-primary btn-with-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-            Connexion
+            Inscription
           </a>
         }
       </div>
@@ -58,7 +58,7 @@ import { AuthService } from '@app/auth/auth.service';
       </div>
       <div class="footer-cta">
         <h4>Prêt à partir ?</h4>
-        <a routerLink="/register" class="lux-btn lux-btn-primary">Commencer maintenant</a>
+        <a routerLink="/inscription" class="lux-btn lux-btn-primary">Commencer maintenant</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -79,6 +79,9 @@ import { AuthService } from '@app/auth/auth.service';
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
+  }
+  .lux-header.scrolled {
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
   }
   .theme-light .lux-header {
     background-color: rgba(255, 255, 255, 0.95);
@@ -145,9 +148,15 @@ import { AuthService } from '@app/auth/auth.service';
   .lux-nav a {
     font-weight: 500;
     font-size: 1.05rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+  }
+  .lux-nav a:hover {
+    background: rgba(212, 175, 55, 0.08);
   }
   .lux-nav a.active {
     color: var(--lux-accent);
+    background: rgba(212, 175, 55, 0.12);
   }
   .lux-actions {
     display: flex;
@@ -210,6 +219,15 @@ import { AuthService } from '@app/auth/auth.service';
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+  .footer-links a,
+  .footer-cta a,
+  .footer-brand p {
+    color: var(--lux-text-muted);
+  }
+  .footer-links a:hover,
+  .footer-cta a:hover {
+    color: var(--lux-accent);
   }
   .footer-links h4, .footer-cta h4 {
     margin-bottom: 0.5rem;

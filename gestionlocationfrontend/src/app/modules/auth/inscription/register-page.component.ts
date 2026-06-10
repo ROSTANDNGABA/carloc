@@ -37,14 +37,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       <div class="form-row">
         <div class="form-group">
           <label for="prenom">Prénom</label>
-          <input id="prenom" type="text" formControlName="prenom" class="lux-input" placeholder="Jean" />
+          <input id="prenom" type="text" formControlName="prenom" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.prenom.invalid" placeholder="Jean" />
           @if (submitted() && registerForm.controls.prenom.errors?.['required']) {
             <span class="field-error">Le prénom est obligatoire.</span>
           }
         </div>
         <div class="form-group">
           <label for="nom">Nom</label>
-          <input id="nom" type="text" formControlName="nom" class="lux-input" placeholder="Dupont" />
+          <input id="nom" type="text" formControlName="nom" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.nom.invalid" placeholder="Dupont" />
           @if (submitted() && registerForm.controls.nom.errors?.['required']) {
             <span class="field-error">Le nom est obligatoire.</span>
           }
@@ -53,7 +53,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       
       <div class="form-group">
         <label for="email">Adresse e-mail</label>
-        <input id="email" type="email" formControlName="email" class="lux-input" placeholder="vous@exemple.com" />
+        <input id="email" type="email" formControlName="email" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.email.invalid" placeholder="vous@exemple.com" />
         @if (submitted() && registerForm.controls.email.errors?.['required']) {
           <span class="field-error">L'email est obligatoire.</span>
         }
@@ -64,7 +64,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       
       <div class="form-group">
         <label for="telephone">Téléphone</label>
-        <input id="telephone" type="tel" formControlName="telephone" class="lux-input" placeholder="+33 6 00 00 00 00" />
+        <input id="telephone" type="tel" formControlName="telephone" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.telephone.invalid" placeholder="+33 6 00 00 00 00" />
         @if (submitted() && registerForm.controls.telephone.errors?.['required']) {
           <span class="field-error">Le téléphone est obligatoire.</span>
         }
@@ -75,7 +75,24 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       
       <div class="form-group">
         <label for="password">Mot de passe <span class="hint">(min. 8 caractères)</span></label>
-        <input id="password" type="password" formControlName="password" class="lux-input" placeholder="••••••••" />
+        <div class="password-input-wrap">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="lux-input"
+            [class.input-invalid]="submitted() && registerForm.controls.password.invalid"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          >
+            <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()" aria-hidden="true"></i>
+          </button>
+        </div>
         @if (submitted() && registerForm.controls.password.errors?.['required']) {
           <span class="field-error">Le mot de passe est obligatoire.</span>
         }
@@ -86,7 +103,24 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       
       <div class="form-group">
         <label for="password_confirm">Confirmer mot de passe</label>
-        <input id="password_confirm" type="password" formControlName="password_confirm" class="lux-input" placeholder="••••••••" />
+        <div class="password-input-wrap">
+          <input
+            id="password_confirm"
+            [type]="showPasswordConfirm() ? 'text' : 'password'"
+            formControlName="password_confirm"
+            class="lux-input"
+            [class.input-invalid]="submitted() && (registerForm.controls.password_confirm.invalid || registerForm.hasError('passwordMismatch'))"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordConfirmVisibility()"
+            [attr.aria-label]="showPasswordConfirm() ? 'Masquer la confirmation du mot de passe' : 'Afficher la confirmation du mot de passe'"
+          >
+            <i class="bi" [class.bi-eye]="!showPasswordConfirm()" [class.bi-eye-slash]="showPasswordConfirm()" aria-hidden="true"></i>
+          </button>
+        </div>
         @if (submitted() && registerForm.controls.password_confirm.errors?.['required']) {
           <span class="field-error">La confirmation est obligatoire.</span>
         }
@@ -97,7 +131,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
       
       <div class="form-group">
         <label for="num_permis">Numéro de permis</label>
-        <input id="num_permis" type="text" formControlName="num_permis" class="lux-input" placeholder="0000000" />
+        <input id="num_permis" type="text" formControlName="num_permis" class="lux-input" [class.input-invalid]="submitted() && registerForm.controls.num_permis.invalid" placeholder="0000000" />
         @if (submitted() && registerForm.controls.num_permis.errors?.['required']) {
           <span class="field-error">Le numéro de permis est obligatoire.</span>
         }
@@ -192,6 +226,36 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     outline: none;
     border-color: var(--lux-accent);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  }
+  .input-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+  }
+  .password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .password-input-wrap .lux-input {
+    padding-right: 3rem;
+  }
+  .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--lux-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+    font-size: 1rem;
+  }
+  .password-toggle:hover {
+    color: var(--lux-accent);
   }
   .full-width {
     width: 100%;
@@ -303,6 +367,8 @@ export class RegisterPageComponent {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly submitted = signal(false);
+  readonly showPassword = signal(false);
+  readonly showPasswordConfirm = signal(false);
 
   get nomControl() {
     return this.registerForm.controls.nom;
@@ -330,6 +396,14 @@ export class RegisterPageComponent {
 
   get passwordConfirmControl() {
     return this.registerForm.controls.password_confirm;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update(value => !value);
+  }
+
+  togglePasswordConfirmVisibility(): void {
+    this.showPasswordConfirm.update(value => !value);
   }
 
   submit(): void {

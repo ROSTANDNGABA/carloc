@@ -26,12 +26,33 @@ import { extractApiError } from '@app/core/utils/api.util';
       
       <div class="form-group">
         <label for="username">Email ou prénom</label>
-        <input id="username" type="text" formControlName="username" class="lux-input" placeholder="Votre email ou identifiant" autocomplete="username" />
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          class="lux-input"
+          [class.input-invalid]="submitted() && usernameControl.invalid"
+          placeholder="Votre email ou identifiant"
+          autocomplete="username"
+        />
+        @if (submitted() && usernameControl.errors?.['required']) {
+          <span class="field-error">Renseignez votre email ou votre identifiant.</span>
+        }
       </div>
       
       <div class="form-group">
         <label for="password">Mot de passe</label>
-        <input id="password" type="password" formControlName="password" class="lux-input" placeholder="••••••••" />
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="lux-input"
+          [class.input-invalid]="submitted() && passwordControl.invalid"
+          placeholder="••••••••"
+        />
+        @if (submitted() && passwordControl.errors?.['required']) {
+          <span class="field-error">Le mot de passe est obligatoire.</span>
+        }
       </div>
       
       <button type="submit" class="lux-btn lux-btn-primary full-width" [disabled]="loginForm.invalid || loading()">
@@ -102,6 +123,10 @@ import { extractApiError } from '@app/core/utils/api.util';
     border-color: var(--lux-accent);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
   }
+  .input-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+  }
   .full-width {
     width: 100%;
     margin-top: 1rem;
@@ -118,6 +143,11 @@ import { extractApiError } from '@app/core/utils/api.util';
     padding: 1rem;
     border-radius: 8px;
     font-weight: 500;
+  }
+  .field-error {
+    color: #dc2626;
+    font-size: 0.82rem;
+    font-weight: 600;
   }
   `]
 })

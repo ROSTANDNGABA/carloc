@@ -376,8 +376,8 @@ CARLOC/
 
 ```bash
 # Cloner le projet
-git clone https://github.com/votre-username/CARLOC.git
-cd CARLOC/gestionlocationbackend
+git clone https://github.com/ROSTANDNGABA/carloc.git
+cd carloc/gestionlocationbackend
 
 # Créer environnement virtuel
 python -m venv .venv
@@ -522,17 +522,19 @@ Render ne conserve pas les fichiers uploadés après redéploiement. Solution :
 
 ```
 🔴 Admin Système
-Email: admin@carloc.cm
-Mot de passe: [À définir en production]
+Compte créé via la commande ensure_admin
+Variables utilisées : CARLOC_ADMIN_USERNAME / CARLOC_ADMIN_EMAIL / CARLOC_ADMIN_PASSWORD
 
 🟢 Gestionnaire
-Email: gestionnaire@carloc.cm
-Mot de passe: [À définir en production]
+Compte créé depuis l'interface Super Admin
+Section : /admin/gestionnaires
 
 🔵 Client
-Email: client@carloc.cm
-Mot de passe: [À définir en production]
+Compte créé depuis l'interface publique
+Page : /inscription
 ```
+
+> Avant la soutenance, remplacez ce bloc par les identifiants réels de démonstration testés sur la version déployée.
 
 ---
 
@@ -541,7 +543,6 @@ Mot de passe: [À définir en production]
 ### Authentification
 - `POST /api/auth/login/` - Connexion (JWT)
 - `POST /api/auth/refresh/` - Rafraîchir token
-- `POST /api/auth/logout/` - Déconnexion
 
 ### Ressources CRUD
 - `GET|POST /api/vehicules/` - Liste/Créer véhicules
@@ -675,7 +676,7 @@ npm audit fix
 
 Ce projet est développé dans le cadre d'un projet académique à l'Institut Universitaire Saint Jean.
 
-**Auteur** : [Votre Nom]  
+**Auteur** : Rostand Ngaba  
 **Formation** : Licence 2 - Développement Web (Angular & Django)  
 **Année** : 2025-2026
 
@@ -695,8 +696,8 @@ Ce projet est développé dans le cadre d'un projet académique à l'Institut Un
 
 Pour toute question technique ou démonstration :
 
-- **Email** : [votre.email@example.com]
-- **GitHub** : [https://github.com/votre-username/CARLOC](https://github.com/votre-username/CARLOC)
+- **Email** : rostandngaba@gmail.com
+- **GitHub** : [https://github.com/ROSTANDNGABA/carloc](https://github.com/ROSTANDNGABA/carloc)
 - **Demo Live** : [https://carloc-smoky.vercel.app](https://carloc-smoky.vercel.app)
 
 ---

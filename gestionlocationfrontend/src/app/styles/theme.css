@@ -1209,6 +1209,9 @@ small {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .theme-light {
@@ -1219,7 +1222,7 @@ small {
   --lux-text-muted: #475569;
   --lux-heading: #0f172a;
   --lux-border: #e2e8f0;
-  --lux-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --lux-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
 
   background-color: var(--lux-bg);
   color: var(--lux-text);
@@ -1227,6 +1230,9 @@ small {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .theme-light .service-card {
@@ -1240,6 +1246,13 @@ small {
 
 .theme-light .lux-services {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.theme-light .lux-footer,
+.theme-light .lux-auth-card,
+.theme-light .service-card,
+.theme-light .fleet-card {
+  box-shadow: var(--lux-shadow);
 }
 
 .theme-dark h1, .theme-dark h2, .theme-dark h3, .theme-dark h4, .theme-dark h5, .theme-dark h6,

@@ -125,37 +125,49 @@ import { canCancelReservation, clientName, money, reservationStatusLabel, shortD
               <div class="modal-body">
                 <label>
                   <span>Client</span>
-                  <select formControlName="client">
+                  <select formControlName="client" [class.input-invalid]="formSubmitted() && reservationForm.controls.client.invalid">
                     <option [value]="0">Sélectionner un client</option>
                     @for (client of clients(); track client.id) {
                       <option [value]="client.id">{{ clientNameFmt(client.nom, client.prenom) }}</option>
                     }
                   </select>
+                  @if (formSubmitted() && reservationForm.controls.client.errors?.['min']) {
+                    <small class="field-error">Sélectionnez un client.</small>
+                  }
                 </label>
                 <label>
                   <span>Véhicule</span>
-                  <select formControlName="vehicule" (change)="checkAvailability()">
+                  <select formControlName="vehicule" (change)="checkAvailability()" [class.input-invalid]="formSubmitted() && reservationForm.controls.vehicule.invalid">
                     <option [value]="0">Sélectionner un véhicule</option>
                     @for (vehicle of vehicles(); track vehicle.id) {
                       <option [value]="vehicle.id">{{ vehicle.marque }} {{ vehicle.modele }} · {{ vehicle.immatriculation }} ({{ vehicle.statut }})</option>
                     }
                   </select>
+                  @if (formSubmitted() && reservationForm.controls.vehicule.errors?.['min']) {
+                    <small class="field-error">Sélectionnez un véhicule.</small>
+                  }
                 </label>
                 <div class="form-grid two">
                   <label>
                     <span>Date de début</span>
-                    <input type="date" formControlName="date_debut" [min]="minDate" (change)="checkAvailability()" />
+                    <input type="date" formControlName="date_debut" [min]="minDate" (change)="checkAvailability()" [class.input-invalid]="formSubmitted() && reservationForm.controls.date_debut.invalid" />
+                    @if (formSubmitted() && reservationForm.controls.date_debut.errors?.['required']) {
+                      <small class="field-error">La date de début est obligatoire.</small>
+                    }
                   </label>
                   <label>
                     <span>Date de fin</span>
-                    <input type="date" formControlName="date_fin" [min]="reservationForm.value.date_debut || minDate" (change)="checkAvailability()" />
+                    <input type="date" formControlName="date_fin" [min]="reservationForm.value.date_debut || minDate" (change)="checkAvailability()" [class.input-invalid]="formSubmitted() && reservationForm.controls.date_fin.invalid" />
+                    @if (formSubmitted() && reservationForm.controls.date_fin.errors?.['required']) {
+                      <small class="field-error">La date de fin est obligatoire.</small>
+                    }
                   </label>
                 </div>
                 @if (reservationForm.hasError('dateRange') || reservationForm.hasError('dateInPast')) {
-                  <p class="muted-cell">Dates invalides : fin après début, début non passée.</p>
+                  <p class="field-error field-error-block">Dates invalides : la fin doit être après le début et la date de début ne peut pas être passée.</p>
                 }
                 @if (availabilityHint()) {
-                  <p class="muted-cell">{{ availabilityHint() }}</p>
+                  <p class="availability-hint">{{ availabilityHint() }}</p>
                 }
               </div>
               <div class="modal-footer">
@@ -199,6 +211,33 @@ import { canCancelReservation, clientName, money, reservationStatusLabel, shortD
       }
     </section>
   `,
+  styles: [`
+    .input-invalid {
+      border-color: #dc2626 !important;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+    .field-error {
+      color: #dc2626;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .field-error-block {
+      margin: 0.2rem 0 0;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(220, 38, 38, 0.18);
+      border-radius: 0.75rem;
+      background: rgba(220, 38, 38, 0.06);
+    }
+    .availability-hint {
+      margin: 0.2rem 0 0;
+      padding: 0.75rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(30, 64, 175, 0.07);
+      border: 1px solid rgba(30, 64, 175, 0.12);
+      color: var(--carloc-text);
+      font-size: 0.9rem;
+    }
+  `],
 })
 export class AdminReservationsPageComponent {
   private readonly fb = inject(FormBuilder).nonNullable;
@@ -217,6 +256,7 @@ export class AdminReservationsPageComponent {
   readonly vehicles = signal<Vehicule[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
+  readonly formSubmitted = signal(false);
   readonly cancelling = signal<number | null>(null);
   readonly error = signal('');
   readonly message = signal('');
@@ -264,6 +304,8 @@ export class AdminReservationsPageComponent {
   }
 
   openCreateModal(): void {
+    this.formSubmitted.set(false);
+    this.availabilityHint.set('');
     this.reservationForm.patchValue({
       client: 0,
       vehicule: 0,
@@ -274,10 +316,12 @@ export class AdminReservationsPageComponent {
   }
 
   closeFormModal(): void {
+    this.formSubmitted.set(false);
     this.showFormModal.set(false);
   }
 
   create(): void {
+    this.formSubmitted.set(true);
     if (this.reservationForm.invalid) {
       this.reservationForm.markAllAsTouched();
       return;
