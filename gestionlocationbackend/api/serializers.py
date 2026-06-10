@@ -450,6 +450,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     prenom_client = serializers.CharField(source="client.prenom", read_only=True)
     marque_vehicule = serializers.CharField(source="vehicule.marque", read_only=True)
     modele_vehicule = serializers.CharField(source="vehicule.modele", read_only=True)
+    categorie_vehicule = serializers.CharField(source="vehicule.categorie", read_only=True)
+    image_vehicule = serializers.ImageField(source="vehicule.image", read_only=True)
+    image_vehicule_url = serializers.SerializerMethodField()
     immatriculation = serializers.CharField(
         source="vehicule.immatriculation", read_only=True
     )
@@ -487,6 +490,9 @@ class ReservationSerializer(serializers.ModelSerializer):
             "prenom_client",
             "marque_vehicule",
             "modele_vehicule",
+            "categorie_vehicule",
+            "image_vehicule",
+            "image_vehicule_url",
             "immatriculation",
             "nb_jours",
             "montant_total",
@@ -512,6 +518,13 @@ class ReservationSerializer(serializers.ModelSerializer):
             return obj.contrat.id
         except Contrat.DoesNotExist:
             return None
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_image_vehicule_url(self, obj) -> str | None:
+        request = self.context.get("request")
+        if obj.vehicule.image and request:
+            return request.build_absolute_uri(obj.vehicule.image.url)
+        return obj.vehicule.image.url if obj.vehicule.image else None
 
     def validate(self, attrs):
         instance = self.instance
@@ -803,6 +816,7 @@ class ContratClotureSerializer(serializers.Serializer):
 class FactureSerializer(serializers.ModelSerializer):
     nom_client = serializers.CharField(source="reservation.client.nom", read_only=True)
     vehicule_info = serializers.SerializerMethodField()
+    categorie_vehicule = serializers.CharField(source="reservation.vehicule.categorie", read_only=True)
     fichier_pdf_url = serializers.SerializerMethodField()
     reservation_total_paye = serializers.DecimalField(
         source="reservation.total_paye",
@@ -838,6 +852,7 @@ class FactureSerializer(serializers.ModelSerializer):
             "fichier_pdf_url",
             "nom_client",
             "vehicule_info",
+            "categorie_vehicule",
             "reservation_total_paye",
         ]
         read_only_fields = [

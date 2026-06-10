@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
 from api.models import Contrat, Facture, NotificationLog, Paiement, Reservation
@@ -135,6 +136,29 @@ class CoreMetierTests(CarLocTestCase):
         self.assertTrue(
             NotificationLog.objects.filter(reservation=reservation).exists()
         )
+
+    def test_reservation_expose_image_et_categorie_vehicule(self):
+        self.vehicule.categorie = "SUV"
+        self.vehicule.image = SimpleUploadedFile(
+            "vehicule.jpg",
+            b"fake-image-content",
+            content_type="image/jpeg",
+        )
+        self.vehicule.save(update_fields=["categorie", "image"])
+
+        reservation = Reservation.objects.create(
+            client=self.client_profile,
+            vehicule=self.vehicule,
+            date_debut=date.today() + timedelta(days=5),
+            date_fin=date.today() + timedelta(days=8),
+        )
+
+        self.client.force_authenticate(user=self.client_user)
+        response = self.client.get(f"/api/reservations/{reservation.id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["categorie_vehicule"], "SUV")
+        self.assertIn("/media/vehicules/", response.data["image_vehicule_url"])
 
     def test_reservation_chevauchement_refuse(self):
         debut = date.today() + timedelta(days=10)
