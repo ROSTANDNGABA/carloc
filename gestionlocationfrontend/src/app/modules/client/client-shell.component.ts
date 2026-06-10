@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '@app/auth/auth.service';
 import { imageUrl } from '@app/shared/formatters';
+import { ButtonComponent } from '@app/shared/components';
 
 interface ShellNavItem {
   label: string;
@@ -14,263 +15,172 @@ interface ShellNavItem {
 @Component({
   selector: 'app-client-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
- template: `
-<div [ngClass]="isDarkTheme() ? 'theme-dark' : 'theme-light'" class="client-layout">
+  template: `
+    <div class="min-h-screen flex flex-col bg-gray-50">
+      
+      <!-- Navbar -->
+      <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            
+            <!-- Logo -->
+            <a routerLink="/" class="flex items-center gap-2 text-2xl font-black text-gray-900 hover:text-carloc-600 transition-colors">
+              <div class="w-10 h-10 bg-gradient-to-br from-carloc-600 to-carloc-500 rounded-xl flex items-center justify-center text-white font-black text-lg">
+                C
+              </div>
+              <span>CarLoc<span class="text-carloc-600">.</span></span>
+            </a>
 
-  <nav class="lux-navbar">
-    <a routerLink="/" class="nav-logo">CarLoc<span>.</span></a>
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center gap-1">
+              @for (item of navItems; track item.route) {
+                <a 
+                  [routerLink]="item.route"
+                  routerLinkActive="bg-carloc-50 text-carloc-700 border-b-2 border-carloc-600"
+                  [routerLinkActiveOptions]="{exact: item.exact || false}"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 hover:text-carloc-600 transition-all"
+                >
+                  <i [class]="'bi ' + item.icon" aria-hidden="true"></i>
+                  <span>{{ item.label }}</span>
+                </a>
+              }
+            </div>
 
-    <button class="hamburger" (click)="toggleMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+            <!-- Right Section -->
+            <div class="hidden md:flex items-center gap-3">
+              
+              <!-- Theme Toggle -->
+              <button
+                (click)="toggleTheme()"
+                class="p-2 text-gray-500 hover:text-carloc-600 hover:bg-gray-100 rounded-lg transition-all"
+                aria-label="Basculer le thème"
+              >
+                <i [class]="'bi text-lg ' + (isDarkTheme() ? 'bi-sun' : 'bi-moon')" aria-hidden="true"></i>
+              </button>
 
-    <div class="nav-links" [class.open]="menuOpen()">
-      @for (item of navItems; track item.route) {
-        <a [routerLink]="item.route"
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{exact: item.exact || false}"
-           (click)="closeMenu()">
-          <i class="bi" [ngClass]="item.icon"></i> {{ item.label }}
-        </a>
-      }
-    </div>
+              <!-- New Reservation CTA -->
+              <a
+                routerLink="/catalogue"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-carloc-600 hover:bg-carloc-700 text-white font-bold rounded-full transition-all hover:-translate-y-0.5 shadow-carloc"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>Nouvelle réservation</span>
+              </a>
 
-    <div class="nav-right" [class.open]="menuOpen()">
-      <button class="theme-toggle-btn" (click)="toggleTheme()" aria-label="Basculer le thème">
-        <i class="bi" [ngClass]="isDarkTheme() ? 'bi-sun' : 'bi-moon'"></i>
-      </button>
+              <!-- Separator -->
+              <div class="w-px h-8 bg-gray-200"></div>
 
-      <a routerLink="/catalogue" class="nav-new-resa" (click)="closeMenu()">
-        <i class="bi bi-plus-lg"></i> Nouvelle réservation
-      </a>
+              <!-- User Menu -->
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all">
+                  <!-- Avatar -->
+                  <div class="relative">
+                    <div class="w-10 h-10 rounded-full ring-2 ring-carloc-200 overflow-hidden">
+                      @if (userPhoto()) {
+                        <img [src]="userPhoto()" [alt]="userLabel()" class="w-full h-full object-cover" />
+                      } @else {
+                        <div class="w-full h-full bg-gradient-to-br from-carloc-200 to-carloc-300 flex items-center justify-center text-carloc-700 font-bold text-sm">
+                          {{ userShortLabel().slice(0,2).toUpperCase() }}
+                        </div>
+                      }
+                    </div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                  </div>
 
-      <div class="nav-sep"></div>
+                  <!-- User Info -->
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-gray-900">{{ userLabel() }}</span>
+                    <span class="text-xs text-gray-500">{{ userEmail() }}</span>
+                  </div>
+                </div>
 
-      <div class="nav-profile">
-        <div class="avatar-ring">
-          @if (userPhoto()) {
-            <img [src]="userPhoto()" alt="Profile" (error)="onUserPhotoError()" />
-          } @else {
-            <div class="avatar-initials">{{ userShortLabel().slice(0,2).toUpperCase() }}</div>
+                <!-- Logout Button -->
+                <button
+                  (click)="logout()"
+                  class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  aria-label="Déconnexion"
+                >
+                  <i class="bi bi-box-arrow-right text-lg" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button
+              (click)="toggleMenu()"
+              class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              aria-label="Menu"
+            >
+              <i [class]="'bi text-xl ' + (menuOpen() ? 'bi-x-lg' : 'bi-list')" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <!-- Mobile Menu -->
+          @if (menuOpen()) {
+            <div class="md:hidden py-4 border-t border-gray-200 animate-slide-up">
+              <div class="flex flex-col gap-2">
+                @for (item of navItems; track item.route) {
+                  <a 
+                    [routerLink]="item.route"
+                    routerLinkActive="bg-carloc-50 text-carloc-700 border-l-4 border-carloc-600"
+                    [routerLinkActiveOptions]="{exact: item.exact || false}"
+                    (click)="closeMenu()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-all"
+                  >
+                    <i [class]="'bi ' + item.icon" aria-hidden="true"></i>
+                    <span>{{ item.label }}</span>
+                  </a>
+                }
+                
+                <div class="h-px bg-gray-200 my-2"></div>
+                
+                <a
+                  routerLink="/catalogue"
+                  (click)="closeMenu()"
+                  class="flex items-center justify-center gap-2 px-4 py-3 bg-carloc-600 hover:bg-carloc-700 text-white font-bold rounded-lg transition-all"
+                >
+                  <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                  <span>Nouvelle réservation</span>
+                </a>
+                
+                <button
+                  (click)="toggleTheme()"
+                  class="flex items-center justify-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                >
+                  <i [class]="'bi ' + (isDarkTheme() ? 'bi-sun' : 'bi-moon')" aria-hidden="true"></i>
+                  <span>{{ isDarkTheme() ? 'Mode clair' : 'Mode sombre' }}</span>
+                </button>
+                
+                <button
+                  (click)="logout()"
+                  class="flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all font-semibold"
+                >
+                  <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                  <span>Déconnexion</span>
+                </button>
+              </div>
+            </div>
           }
         </div>
-        <div class="profile-info">
-          <span class="profile-name">{{ userLabel() }}</span>
-          <span class="profile-role">{{ userEmail() }}</span>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <router-outlet></router-outlet>
+      </main>
+
+      <!-- Footer (Optional) -->
+      <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div class="text-center text-sm text-gray-500">
+            © 2026 CarLoc. Tous droits réservés.
+          </div>
         </div>
-      </div>
-
-      <button class="btn-logout" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i> Déconnexion
-      </button>
+      </footer>
     </div>
-  </nav>
-
-  <div class="client-page-content">
-    <router-outlet></router-outlet>
-  </div>
-
-</div>
-`,
-styles: [`
-  .client-layout {
-    display: flex; flex-direction: column; min-height: 100vh;
-    background: var(--lux-bg);
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-
-  .client-layout *,
-  .client-layout *::before,
-  .client-layout *::after {
-    box-sizing: border-box;
-  }
-
-  /* ── NAVBAR ── */
-  .lux-navbar {
-    position: sticky; top: 0; z-index: 200;
-    height: 68px;
-    width: 100%;
-    max-width: 100vw;
-    background: var(--lux-surface);
-    border-bottom: 1px solid var(--lux-border);
-    display: flex; align-items: center;
-    padding: 0 2.5rem; gap: 2rem;
-    transition: background-color 0.3s ease;
-  }
-
-  .nav-logo {
-    font-size: 1.6rem; font-weight: 800;
-    color: var(--lux-heading);
-    letter-spacing: -0.05em;
-    text-decoration: none;
-    margin-right: 1rem; white-space: nowrap;
-  }
-  .nav-logo span { color: var(--lux-accent); }
-
-  .nav-links {
-    display: flex; align-items: center; gap: 0.25rem; flex: 1;
-  }
-  .nav-links a {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.5rem 0.9rem; border-radius: 7px;
-    color: var(--lux-text-muted);
-    font-size: 0.88rem; font-weight: 500;
-    text-decoration: none;
-    transition: var(--lux-transition);
-    white-space: nowrap;
-  }
-  .nav-links a i { font-size: 1rem; }
-  .nav-links a:hover, .nav-links a.active {
-    background: rgba(212,175,55,0.1); color: var(--lux-accent);
-  }
-  .nav-links a.active {
-    border-bottom: 2px solid var(--lux-accent);
-    border-radius: 7px 7px 0 0;
-  }
-
-  /* ── RIGHT ZONE ── */
-  .nav-right {
-    display: flex; align-items: center; gap: 1rem; margin-left: auto;
-  }
-
-  .theme-toggle-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 50%;
-    background: transparent; border: 1px solid var(--lux-border);
-    color: var(--lux-text-muted); cursor: pointer;
-    transition: var(--lux-transition); font-size: 1.1rem;
-  }
-  .theme-toggle-btn:hover {
-    background: rgba(212,175,55,0.1); color: var(--lux-accent);
-    border-color: var(--lux-accent);
-  }
-
-  .nav-new-resa {
-    padding: 0.45rem 1.1rem;
-    background: var(--lux-accent); color: #0d0d0d;
-    border-radius: 7px; font-size: 0.82rem; font-weight: 600;
-    text-decoration: none; transition: var(--lux-transition); white-space: nowrap;
-  }
-  .nav-new-resa:hover { filter: brightness(1.15); }
-
-  /* ── AVATAR ── */
-  .nav-profile {
-    display: flex; align-items: center; gap: 0.75rem;
-    cursor: pointer; padding: 0.35rem 0.6rem; border-radius: 10px;
-    transition: var(--lux-transition);
-  }
-  .nav-profile:hover { background: rgba(212,175,55,0.07); }
-
-  .avatar-ring {
-    width: 40px; height: 40px; border-radius: 50%;
-    border: 2px solid var(--lux-accent);
-    padding: 2px; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .avatar-ring img {
-    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-  }
-  .avatar-initials {
-    width: 100%; height: 100%; border-radius: 50%;
-    background: rgba(212,175,55,0.15); color: var(--lux-accent);
-    font-size: 0.85rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .profile-info { display: flex; flex-direction: column; line-height: 1.3; }
-  .profile-name { font-size: 0.85rem; font-weight: 600; color: var(--lux-heading); }
-  .profile-role { font-size: 0.72rem; color: var(--lux-text-muted); }
-
-  .nav-sep { width: 1px; height: 28px; background: var(--lux-border); }
-
-  /* ── LOGOUT ── */
-  .btn-logout {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.45rem 1rem; background: transparent;
-    border: 1px solid var(--lux-border); border-radius: 7px;
-    color: var(--lux-text-muted); font-size: 0.82rem; font-weight: 500;
-    cursor: pointer; transition: var(--lux-transition); white-space: nowrap;
-  }
-  .btn-logout:hover {
-    border-color: rgba(192,57,43,0.4); color: #e74c3c;
-    background: rgba(231,76,60,0.07);
-  }
-
-  /* ── HAMBURGER ── */
-  .hamburger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 36px; height: 36px;
-    background: transparent;
-    border: 1px solid var(--lux-border);
-    border-radius: 8px;
-    cursor: pointer;
-    padding: 8px;
-    margin-left: auto;
-  }
-  .hamburger span {
-    display: block;
-    width: 100%; height: 2px;
-    background: var(--lux-text-muted);
-    border-radius: 2px;
-    transition: 0.3s;
-  }
-
-  /* ── PAGE ── */
-  .client-page-content { padding: 3rem; flex: 1; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    .lux-navbar {
-      flex-wrap: wrap;
-      height: auto;
-      padding: 1rem 1.5rem;
-      gap: 0.75rem;
-    }
-    .hamburger { display: flex; }
-    .nav-links, .nav-right {
-      display: none;
-      width: 100%;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.5rem;
-    }
-    .nav-links.open, .nav-right.open { display: flex; }
-    .nav-links a { padding: 0.75rem 1rem; border-radius: 8px; }
-    .nav-links a.active { border-bottom: none; border-left: 3px solid var(--lux-accent); border-radius: 0 8px 8px 0; }
-    .nav-right { margin-left: 0; gap: 0.75rem; }
-    .nav-sep { display: none; }
-    .nav-new-resa { text-align: center; padding: 0.7rem 1rem; }
-    .nav-profile { padding: 0.5rem 0; }
-    .client-page-content {
-      width: 100%;
-      max-width: 100vw;
-      padding: 1rem;
-      overflow-x: hidden;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .lux-navbar {
-      padding: 0.85rem;
-    }
-
-    .nav-logo {
-      font-size: 1.4rem;
-    }
-
-    .client-page-content {
-      padding: 0.5rem;
-    }
-  }
-`]
+  `,
 })
 export class ClientShellComponent {
   private readonly authService = inject(AuthService);
@@ -324,10 +234,6 @@ export class ClientShellComponent {
   logout(): void {
     this.authService.logout();
     void this.router.navigateByUrl('/');
-  }
-
-  onUserPhotoError(): void {
-    this.userPhoto.set(null);
   }
 
   private syncUserFromAuth(): void {
