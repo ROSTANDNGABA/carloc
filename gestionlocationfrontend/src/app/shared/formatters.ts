@@ -13,7 +13,7 @@ const fallbackByCategory: Record<string, string> = {
 };
 
 const fallbackImages = [
-  'assets/images/hero.png',
+  'assets/images/hero.jpg',
   'assets/images/cat_suv.png',
   'assets/images/cat_supercar.png',
   'assets/images/cat_gt.png',

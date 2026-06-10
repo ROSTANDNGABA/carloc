@@ -53,7 +53,12 @@ import {
       @for (res of reservations(); track res.id) {
         <article class="rounded-lg overflow-hidden bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 shadow-sm hover:shadow-lg transition-shadow">
           <div class="relative aspect-[16/10] bg-gray-100 dark:bg-carloc-800">
-            <img [src]="reservationImage(res)" [alt]="vehicleLabel(res)" class="w-full h-full object-cover" />
+            <img
+              [src]="reservationImage(res)"
+              [alt]="vehicleLabel(res)"
+              class="w-full h-full object-cover"
+              (error)="useFallbackImage($event, res)"
+            />
             <span class="absolute left-3 top-3 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border" [ngClass]="statusClass(res)">
               {{ statusLabel(res) }}
             </span>
@@ -168,7 +173,14 @@ export class ClientReservationsPageComponent {
   }
 
   reservationImage(res: Reservation): string {
-    return imageUrl(res.image_vehicule_url ?? res.image_vehicule, res.categorie_vehicule, 0);
+    return imageUrl(res.image_vehicule_url ?? res.image_vehicule, res.categorie_vehicule, res.id ?? 0);
+  }
+
+  useFallbackImage(event: Event, res: Reservation): void {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    img.onerror = null;
+    img.src = imageUrl(null, res.categorie_vehicule, res.id ?? 0);
   }
 
   canCancel(res: Reservation): boolean {
