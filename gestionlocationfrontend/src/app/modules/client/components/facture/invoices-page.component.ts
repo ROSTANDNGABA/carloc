@@ -141,7 +141,48 @@ import { money, shortDate } from '@app/shared/formatters';
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <iframe [src]="previewResourceUrl()" class="flex-1 w-full bg-white" title="Aperçu facture"></iframe>
+        @if (previewUrl(); as url) {
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-carloc-800 bg-gray-50 dark:bg-carloc-900">
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Sur telephone, ouvrez la facture dans un nouvel onglet ou telechargez le PDF.
+            </p>
+            <div class="grid grid-cols-1 sm:flex gap-2">
+              <a [href]="url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-bold hover:bg-black dark:hover:bg-gray-200 transition-colors">
+                <i class="bi bi-box-arrow-up-right"></i>
+                Ouvrir
+              </a>
+              <a [href]="url" [download]="previewFilename()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-carloc-700 text-gray-800 dark:text-gray-100 font-bold hover:bg-white dark:hover:bg-carloc-800 transition-colors">
+                <i class="bi bi-download"></i>
+                Telecharger
+              </a>
+            </div>
+          </div>
+          @if (isMobilePreview()) {
+            <div class="flex-1 bg-white dark:bg-carloc-950 flex items-center justify-center px-6 py-10">
+              <div class="max-w-sm text-center">
+                <div class="mx-auto w-16 h-16 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 flex items-center justify-center text-3xl">
+                  <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <h3 class="mt-5 text-xl font-black text-gray-900 dark:text-white">Facture prete</h3>
+                <p class="mt-2 text-gray-500 dark:text-gray-400">
+                  Les navigateurs mobiles bloquent parfois l'apercu PDF integre. Utilisez le bouton ouvrir pour afficher la facture.
+                </p>
+                <div class="mt-6 grid gap-3">
+                  <a [href]="url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 font-black">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    Ouvrir la facture
+                  </a>
+                  <a [href]="url" [download]="previewFilename()" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-gray-200 dark:border-carloc-700 text-gray-800 dark:text-gray-100 font-black">
+                    <i class="bi bi-download"></i>
+                    Telecharger
+                  </a>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <iframe [src]="previewResourceUrl()" class="flex-1 w-full bg-white" title="Apercu facture"></iframe>
+          }
+        }
       </div>
     </div>
   }
@@ -162,6 +203,8 @@ export class InvoicesPageComponent {
   readonly previewUrl = signal<string | null>(null);
   readonly previewResourceUrl = signal<SafeResourceUrl | null>(null);
   readonly previewTitle = signal('Facture');
+  readonly previewFilename = signal('facture.pdf');
+  readonly isMobilePreview = signal(false);
 
   readonly paidCount = computed(() => this.factures().filter(f => f.statut === 'payee').length);
   readonly pendingCount = computed(() => this.factures().filter(f => f.statut !== 'payee' && f.statut !== 'annulee').length);
@@ -215,6 +258,8 @@ export class InvoicesPageComponent {
     this.error.set('');
     this.message.set('');
     this.previewTitle.set(facture.numero || `Facture #${facture.id}`);
+    this.previewFilename.set(this.pdfFilename(facture));
+    this.isMobilePreview.set(this.detectMobilePreview());
 
     const source = facture.fichier_pdf_url
       ? this.facturesService.downloadPdf(facture.id)
@@ -224,7 +269,8 @@ export class InvoicesPageComponent {
       next: blob => {
         if (typeof window === 'undefined') return;
         this.revokePreviewUrl();
-        const url = window.URL.createObjectURL(blob);
+        const pdfBlob = blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(pdfBlob);
         this.previewUrl.set(url);
         this.previewResourceUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
       },
@@ -236,6 +282,8 @@ export class InvoicesPageComponent {
     this.revokePreviewUrl();
     this.previewUrl.set(null);
     this.previewResourceUrl.set(null);
+    this.previewFilename.set('facture.pdf');
+    this.isMobilePreview.set(false);
   }
 
   statusClass(facture: Facture): string {
@@ -250,5 +298,15 @@ export class InvoicesPageComponent {
     if (current && typeof window !== 'undefined') {
       window.URL.revokeObjectURL(current);
     }
+  }
+
+  private detectMobilePreview(): boolean {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 768px)').matches || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(window.navigator.userAgent);
+  }
+
+  private pdfFilename(facture: Facture): string {
+    const base = facture.numero || `facture-${facture.id}`;
+    return `${base.replace(/[^a-z0-9._-]+/gi, '-')}.pdf`;
   }
 }
