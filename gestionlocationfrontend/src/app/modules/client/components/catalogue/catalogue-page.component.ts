@@ -79,46 +79,56 @@ import {
       }
     </div>
   } @else if (filteredVehicles().length) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-      @for (vehicule of filteredVehicles(); track vehicule.id) {
-        <article class="rounded-lg overflow-hidden bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 shadow-sm hover:shadow-lg transition-shadow">
-          <div class="relative aspect-[16/10] bg-gray-100 dark:bg-carloc-800">
-            <img [src]="image(vehicule, 0)" [alt]="vehicule.marque + ' ' + vehicule.modele" class="w-full h-full object-cover" />
-            <span class="absolute left-3 top-3 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border" [ngClass]="vehicleStatusClass(vehicule)">
-              {{ label(vehicule.statut) }}
-            </span>
-            <span class="absolute right-3 top-3 px-3 py-1 rounded-full text-xs font-bold bg-white/90 dark:bg-carloc-950/90 text-gray-700 dark:text-gray-200">
-              {{ vehicule.categorie }}
-            </span>
+    <div class="space-y-12">
+      @for (group of groupedVehicles(); track group[0]) {
+        <div class="space-y-6">
+          <!-- Category Header -->
+          <div class="flex items-center gap-4">
+            <h2 class="text-2xl font-black text-gray-900 dark:text-white capitalize tracking-tight">{{ group[0] }}</h2>
+            <div class="h-px bg-gray-200 dark:bg-carloc-800 flex-1"></div>
+            <span class="text-sm font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-carloc-800 px-3 py-1 rounded-full">{{ group[1].length }} véhicule(s)</span>
           </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            @for (vehicule of group[1]; track vehicule.id) {
+              <article class="rounded-[1.5rem] overflow-hidden bg-white dark:bg-carloc-900 border border-gray-200 dark:border-carloc-800 shadow-sm hover:shadow-xl hover:shadow-carloc-900/5 dark:hover:shadow-white/5 transition-all duration-300 hover:-translate-y-1 group">
+                <div class="relative aspect-[16/10] bg-gray-100 dark:bg-carloc-800 overflow-hidden">
+                  <img [src]="image(vehicule, 0)" [alt]="vehicule.marque + ' ' + vehicule.modele" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <span class="absolute left-4 top-4 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-md" [ngClass]="vehicleStatusClass(vehicule)">
+                    {{ label(vehicule.statut) }}
+                  </span>
+                </div>
 
-          <div class="p-5 space-y-4">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <h2 class="text-xl font-black text-gray-900 dark:text-white truncate">{{ vehicule.marque }} {{ vehicule.modele }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ vehicule.immatriculation }}</p>
-              </div>
-              <div class="text-right shrink-0">
-                <strong class="block text-lg font-black text-gray-900 dark:text-white">{{ moneyFmt(vehicule.prix_journalier) }}</strong>
-                <span class="text-xs text-gray-500 dark:text-gray-400">/ jour</span>
-              </div>
-            </div>
+                <div class="p-6 space-y-5">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <h2 class="text-xl font-black text-gray-900 dark:text-white truncate">{{ vehicule.marque }} {{ vehicule.modele }}</h2>
+                      <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">{{ vehicule.immatriculation }}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <strong class="block text-xl font-black text-gray-900 dark:text-white">{{ moneyFmt(vehicule.prix_journalier) }}</strong>
+                      <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold">/ jour</span>
+                    </div>
+                  </div>
 
-            <div class="grid grid-cols-3 gap-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-              <span class="rounded-lg bg-gray-50 dark:bg-carloc-800 px-3 py-2 text-center"><i class="bi bi-fuel-pump"></i> Prêt</span>
-              <span class="rounded-lg bg-gray-50 dark:bg-carloc-800 px-3 py-2 text-center"><i class="bi bi-shield-check"></i> Suivi</span>
-              <span class="rounded-lg bg-gray-50 dark:bg-carloc-800 px-3 py-2 text-center"><i class="bi bi-clock"></i> 24h</span>
-            </div>
+                  <div class="grid grid-cols-3 gap-2 text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    <span class="rounded-xl bg-gray-50 dark:bg-carloc-800 px-2 py-2.5 text-center flex flex-col items-center gap-1"><i class="bi bi-fuel-pump text-base mb-0.5"></i> Prêt</span>
+                    <span class="rounded-xl bg-gray-50 dark:bg-carloc-800 px-2 py-2.5 text-center flex flex-col items-center gap-1"><i class="bi bi-shield-check text-base mb-0.5"></i> Suivi</span>
+                    <span class="rounded-xl bg-gray-50 dark:bg-carloc-800 px-2 py-2.5 text-center flex flex-col items-center gap-1"><i class="bi bi-clock text-base mb-0.5"></i> 24h</span>
+                  </div>
 
-            <button type="button" class="w-full rounded-lg px-4 py-3 font-black transition-colors disabled:cursor-not-allowed disabled:opacity-50" [ngClass]="vehicule.statut === 'disponible' ? 'bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 hover:bg-black dark:hover:bg-gray-200' : 'bg-gray-100 dark:bg-carloc-800 text-gray-400'" [disabled]="vehicule.statut !== 'disponible'" (click)="selectVehicle(vehicule)">
-              @if (vehicule.statut === 'disponible') {
-                Louer ce véhicule
-              } @else {
-                Non disponible
-              }
-            </button>
+                  <button type="button" class="w-full rounded-xl px-4 py-3.5 font-black uppercase tracking-widest text-xs transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50" [ngClass]="vehicule.statut === 'disponible' ? 'bg-carloc-900 dark:bg-white text-white dark:text-carloc-950 hover:bg-black dark:hover:bg-gray-200 shadow-md hover:shadow-lg' : 'bg-gray-100 dark:bg-carloc-800 text-gray-400'" [disabled]="vehicule.statut !== 'disponible'" (click)="selectVehicle(vehicule)">
+                    @if (vehicule.statut === 'disponible') {
+                      Louer ce véhicule
+                    } @else {
+                      Indisponible
+                    }
+                  </button>
+                </div>
+              </article>
+            }
           </div>
-        </article>
+        </div>
       }
     </div>
   } @else {
